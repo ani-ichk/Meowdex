@@ -263,31 +263,25 @@ class LevelView(arcade.View):
         super().__init__()
 
         # Загружаем текстуры
-        try:
-            self.background_texture = arcade.load_texture("../../images/background/blue_shtori_dark.jpg")
-        except:
-            self.background_texture = arcade.load_texture("../../images/background/blue_shtori.jpg")
+        self.single_mod = arcade.load_texture("../../images/button/play_btn.png")
+        self.friend_mod = arcade.load_texture("../../images/button/play_btn.png")
+        self.light_lvl = arcade.load_texture("../../images/button/play_btn.png")
+        self.middle_lvl = arcade.load_texture("../../images/button/play_btn.png")
+        self.hard_lvl = arcade.load_texture("../../images/button/play_btn.png")
+        self.expert_lvl = arcade.load_texture("../../images/button/play_btn.png")
+        self.word_from_base = arcade.load_texture("../../images/button/play_btn.png")
+        self.user_input = arcade.load_texture("../../images/button/play_btn.png")
 
-        # Загружаем текстуры цепей
-        try:
-            self.chains1_texture = arcade.load_texture("../../images/background/chains1.png")
-            self.chains2_texture = arcade.load_texture("../../images/background/chains2.png")
-            self.chains_loaded = True
-        except:
-            print("Текстуры цепей не найдены. Цепи не будут отображаться.")
-            self.chains_loaded = False
+        self.background_texture_left = arcade.load_texture("../../images/background/blue_shtori_left.jpg")
+        self.background_texture_right = arcade.load_texture("../../images/background/blue_shtori_right.jpg")
 
-        # Загружаем текстуры кнопок уровней
-        self.level1_btn = arcade.load_texture("../../images/button/level1_btn.png")
-        self.level2_btn = arcade.load_texture("../../images/button/level2_btn.png")
-        self.level3_btn = arcade.load_texture("../../images/button/level3_btn.png")
         self.back_btn = arcade.load_texture("../../images/button/exit_btn.png")
 
         self.buttons_hover = {
-            "level1": False,
-            "level2": False,
-            "level3": False,
-            "back": False
+            "light": False,
+            "middle": False,
+            "hard": False,
+            "expert": False
         }
 
         # Анимационные переменные
@@ -302,99 +296,181 @@ class LevelView(arcade.View):
 
     def on_draw(self):
         self.clear()
+        # 1. Рисуем фон - две склеенные фотографии
+        self._draw_background()
 
-        # Рисуем затемненный фон
-        if (self.window.width / self.window.height) > (self.background_texture.width / self.background_texture.height):
-            draw_width = self.background_texture.width * (self.window.height / self.background_texture.height)
-            draw_height = self.window.height
-        else:
-            draw_width = self.window.width
-            draw_height = self.background_texture.height * (self.window.width / self.background_texture.width)
+        # 2. Рисуем интерфейс поверх фона
+        self._draw_interface()
 
-        arcade.draw_texture_rect(self.background_texture,
-                                 arcade.rect.XYWH(self.window.width // 2,
+        # 3. Кнопка "Назад" - поверх всего
+        self._draw_back_button()
+
+    def _draw_background(self):
+        """Рисует две фотографии фона, которые склеиваются посередине"""
+        # Половина ширины экрана
+        half_width = self.window.width // 2
+
+        # Рассчитываем размеры для сохранения пропорций
+
+        # Левая фотография
+        # Масштабируем по высоте окна, сохраняя пропорции
+        left_scale = self.window.height / self.background_texture_left.height
+        left_width = self.background_texture_left.width * left_scale
+        left_height = self.window.height
+
+        # Правая фотография
+        # Масштабируем по высоте окна, сохраняя пропорции
+        right_scale = self.window.height / self.background_texture_right.height
+        right_width = self.background_texture_right.width * right_scale
+        right_height = self.window.height
+
+        # Позиционируем фотографии так, чтобы они склеивались посередине
+
+        # Левая фотография: правый край на середине экрана
+        left_x = half_width - left_width // 2
+        left_center_x = left_x + left_width // 2
+
+        # Правая фотография: левый край на середине экрана
+        right_x = half_width - right_width // 2
+        right_center_x = right_x + right_width // 2
+
+        # Рисуем левую фотографию
+        arcade.draw_texture_rect(self.background_texture_left,
+                                 arcade.rect.XYWH(left_center_x,
                                                   self.window.height // 2,
-                                                  draw_width,
-                                                  draw_height))
+                                                  left_width,
+                                                  left_height))
 
-        # Рисуем цепи
-        if self.chains_loaded:
-            chain_height = self.window.height * 0.9
+        # Рисуем правую фотографию
+        arcade.draw_texture_rect(self.background_texture_right,
+                                 arcade.rect.XYWH(right_center_x,
+                                                  self.window.height // 2,
+                                                  right_width,
+                                                  right_height))
 
-            # Левая цепь
-            left_chain_width = self.chains1_texture.width * (chain_height / self.chains1_texture.height)
-            arcade.draw_texture_rect(self.chains1_texture,
-                                     arcade.rect.XYWH(100,
-                                                      self.window.height // 2,
-                                                      left_chain_width,
-                                                      chain_height),
-                                     alpha=200)
+    def _draw_interface(self):
+        """Рисует интерфейс с кнопками поверх фона"""
+        scale = self.buttons_appear_progress
+        if scale <= 0:
+            return
 
-            # Правая цепь
-            right_chain_width = self.chains2_texture.width * (chain_height / self.chains2_texture.height)
-            arcade.draw_texture_rect(self.chains2_texture,
-                                     arcade.rect.XYWH(self.window.width - 100,
-                                                      self.window.height // 2,
-                                                      right_chain_width,
-                                                      chain_height),
-                                     alpha=200)
+        # Половина ширины экрана
+        half_width = self.window.width // 2
 
-        # Рисуем кнопки уровней ГОРИЗОНТАЛЬНО в центре экрана
-        btn_height = self.window.height / 6
-        btn_width = self.level1_btn.width * (btn_height / self.level1_btn.height)
-        spacing = btn_width * 1.2
-        center_x = self.window.width // 2
-        center_y = self.window.height // 2
+        # Рисуем левую половину (Одиночный режим)
+        self._draw_left_half_interface(half_width, scale)
 
-        # Список кнопок для горизонтального расположения
+        # Рисуем правую половину (Режим с другом)
+        self._draw_right_half_interface(half_width, scale)
+
+    def _draw_left_half_interface(self, half_width, scale):
+        """Рисует интерфейс в левой половине экрана"""
+        # Заголовок "Одиночный режим" - вверху левой половины
+        header_height = self.window.height * 0.85
+        header_width = self.single_mod.width * (header_height / self.single_mod.height * 0.3)
+
+        header_center_x = half_width // 2  # Центр левой половины
+        header_center_y = self.window.height * 0.8
+
+        if scale > 0:
+            arcade.draw_texture_rect(self.single_mod,
+                                     arcade.rect.XYWH(header_center_x,
+                                                      header_center_y,
+                                                      header_width * scale,
+                                                      header_height * 0.3 * scale),
+                                     alpha=int(255 * scale))
+
+        # 4 кнопки уровней сложности под заголовком
         level_buttons = [
-            (self.level1_btn, "level1", center_x - spacing),
-            (self.level2_btn, "level2", center_x),
-            (self.level3_btn, "level3", center_x + spacing)
+            (self.light_lvl, "light", self.window.height * 0.6),
+            (self.middle_lvl, "middle", self.window.height * 0.45),
+            (self.hard_lvl, "hard", self.window.height * 0.3),
+            (self.expert_lvl, "expert", self.window.height * 0.15)
         ]
 
-        # Рисуем кнопки уровней
-        for texture, btn_type, btn_x in level_buttons:
-            scale = self.buttons_appear_progress
-            alpha = int(255 * self.buttons_appear_progress)
+        for texture, btn_type, y_pos in level_buttons:
+            btn_height = self.window.height * 0.1
+            btn_width = texture.width * (btn_height / texture.height)
+            btn_center_x = half_width // 2
 
-            if self.buttons_hover[btn_type] and self.buttons_appear_progress >= 1.0:
-                arcade.draw_rectangle_filled(btn_x, center_y,
+            # Подсветка при наведении
+            if scale >= 1.0 and self.buttons_hover[btn_type]:
+                arcade.draw_rectangle_filled(btn_center_x, y_pos,
                                              btn_width * 1.1, btn_height * 1.1,
                                              arcade.color.GOLDEN_BROWN + (100,))
 
+            # Рисуем кнопку
             if scale > 0:
                 arcade.draw_texture_rect(texture,
-                                         arcade.rect.XYWH(btn_x,
-                                                          center_y,
+                                         arcade.rect.XYWH(btn_center_x,
+                                                          y_pos,
                                                           btn_width * scale,
                                                           btn_height * scale),
-                                         alpha=alpha)
+                                         alpha=int(255 * scale))
 
-        # Кнопка "Назад"
-        back_btn_height = self.window.height / 12
+    def _draw_right_half_interface(self, half_width, scale):
+        """Рисует интерфейс в правой половине экрана"""
+        # Заголовок "Режим с другом" - вверху правой половины
+        header_height = self.window.height * 0.85
+        header_width = self.friend_mod.width * (header_height / self.friend_mod.height * 0.3)
+
+        header_center_x = half_width + half_width // 2  # Центр правой половины
+        header_center_y = self.window.height * 0.8
+
+        if scale > 0:
+            arcade.draw_texture_rect(self.friend_mod,
+                                     arcade.rect.XYWH(header_center_x,
+                                                      header_center_y,
+                                                      header_width * scale,
+                                                      header_height * 0.3 * scale),
+                                     alpha=int(255 * scale))
+
+        # 2 кнопки под заголовком
+        friend_buttons = [
+            (self.word_from_base, "word_base", self.window.height * 0.45),
+            (self.user_input, "user_word", self.window.height * 0.3)
+        ]
+
+        for texture, btn_type, y_pos in friend_buttons:
+            btn_height = self.window.height * 0.1
+            btn_width = texture.width * (btn_height / texture.height)
+            btn_center_x = half_width + half_width // 2
+
+            # Рисуем кнопку
+            if scale > 0:
+                arcade.draw_texture_rect(texture,
+                                         arcade.rect.XYWH(btn_center_x,
+                                                          y_pos,
+                                                          btn_width * scale,
+                                                          btn_height * scale),
+                                         alpha=int(255 * scale))
+
+    def _draw_back_button(self):
+        """Рисует кнопку 'Назад' внизу по центру"""
+        scale = self.buttons_appear_progress
+        if scale <= 0:
+            return
+
+        back_btn_height = self.window.height / 15
         back_btn_y = back_btn_height * 1.2
         back_btn_width = self.back_btn.width * (back_btn_height / self.back_btn.height)
 
-        back_scale = 1.0
-        back_alpha = 255
-        if self.buttons_appear_progress < 1.0:
-            back_progress = max(0, (self.buttons_appear_progress - 0.3) * 1.4)
-            back_scale = back_progress
-            back_alpha = int(255 * back_progress)
+        # # Подсветка при наведении
+        # if scale >= 1.0 and self.buttons_hover["back"]:
+        #     arcade.draw_rectangle_filled(self.window.width // 2,
+        #                                  back_btn_y,
+        #                                  back_btn_width * 1.1,
+        #                                  back_btn_height * 1.1,
+        #                                  arcade.color.GRAY + (100,))
 
-        if self.buttons_hover["back"] and self.buttons_appear_progress >= 1.0:
-            arcade.draw_rectangle_filled(self.window.width // 2, back_btn_y,
-                                         back_btn_width * 1.1 * back_scale, back_btn_height * 1.1 * back_scale,
-                                         arcade.color.GRAY + (100,))
-
-        if back_scale > 0:
+        # Рисуем кнопку
+        if scale > 0:
             arcade.draw_texture_rect(self.back_btn,
                                      arcade.rect.XYWH(self.window.width // 2,
                                                       back_btn_y,
-                                                      back_btn_width * back_scale,
-                                                      back_btn_height * back_scale),
-                                     alpha=back_alpha)
+                                                      back_btn_width * scale,
+                                                      back_btn_height * scale),
+                                     alpha=int(255 * scale))
 
     def on_update(self, delta_time):
         """Обновление анимации появления кнопок"""
@@ -405,24 +481,46 @@ class LevelView(arcade.View):
         if self.buttons_appear_progress < 1.0:
             return
 
-        btn_height = self.window.height / 6
-        btn_width = self.level1_btn.width * (btn_height / self.level1_btn.height)
-        spacing = btn_width * 1.2
-        center_x = self.window.width // 2
-        center_y = self.window.height // 2
+        half_width = self.window.width // 2
 
-        # Кнопки уровней
-        level_buttons = ["level1", "level2", "level3"]
-        for i, btn_type in enumerate(level_buttons):
-            btn_x = center_x + (i - 1) * spacing
-            if (btn_x - btn_width // 2 < x < btn_x + btn_width // 2 and
-                    center_y - btn_height // 2 < y < center_y + btn_height // 2):
+        # Проверяем кнопки левой половины (уровни сложности)
+        level_buttons = [
+            ("light", self.window.height * 0.6),
+            ("middle", self.window.height * 0.45),
+            ("hard", self.window.height * 0.3),
+            ("expert", self.window.height * 0.15)
+        ]
+
+        for btn_type, y_pos in level_buttons:
+            btn_height = self.window.height * 0.1
+            btn_width = self.light_lvl.width * (btn_height / self.light_lvl.height)
+            btn_center_x = half_width // 2
+
+            if (btn_center_x - btn_width // 2 < x < btn_center_x + btn_width // 2 and
+                    y_pos - btn_height // 2 < y < y_pos + btn_height // 2):
                 self.buttons_hover[btn_type] = True
             else:
                 self.buttons_hover[btn_type] = False
 
-        # Кнопка "Назад"
-        back_btn_height = self.window.height / 12
+        # Проверяем кнопки правой половины
+        friend_buttons = [
+            ("word_base", self.window.height * 0.45),
+            ("user_word", self.window.height * 0.3)
+        ]
+
+        for btn_type, y_pos in friend_buttons:
+            btn_height = self.window.height * 0.1
+            btn_width = self.word_from_base.width * (btn_height / self.word_from_base.height)
+            btn_center_x = half_width + half_width // 2
+
+            if (btn_center_x - btn_width // 2 < x < btn_center_x + btn_width // 2 and
+                    y_pos - btn_height // 2 < y < y_pos + btn_height // 2):
+                self.buttons_hover[btn_type] = True
+            else:
+                self.buttons_hover[btn_type] = False
+
+        # Проверяем кнопку "Назад"
+        back_btn_height = self.window.height / 15
         back_btn_y = back_btn_height * 1.2
         back_btn_width = self.back_btn.width * (back_btn_height / self.back_btn.height)
 
@@ -437,23 +535,44 @@ class LevelView(arcade.View):
             return
 
         if button == arcade.MOUSE_BUTTON_LEFT:
-            btn_height = self.window.height / 6
-            btn_width = self.level1_btn.width * (btn_height / self.level1_btn.height)
-            spacing = btn_width * 1.2
-            center_x = self.window.width // 2
-            center_y = self.window.height // 2
+            half_width = self.window.width // 2
 
-            # Проверка нажатия на кнопки уровней
-            level_buttons = ["level1", "level2", "level3"]
-            for i, btn_type in enumerate(level_buttons):
-                btn_x = center_x + (i - 1) * spacing
-                if (btn_x - btn_width // 2 < x < btn_x + btn_width // 2 and
-                        center_y - btn_height // 2 < y < center_y + btn_height // 2):
-                    print(f"Выбран уровень: {btn_type}")
+            # Проверка нажатия на кнопки уровней сложности
+            level_buttons = [
+                ("light", self.window.height * 0.6),
+                ("middle", self.window.height * 0.45),
+                ("hard", self.window.height * 0.3),
+                ("expert", self.window.height * 0.15)
+            ]
+
+            for btn_type, y_pos in level_buttons:
+                btn_height = self.window.height * 0.1
+                btn_width = self.light_lvl.width * (btn_height / self.light_lvl.height)
+                btn_center_x = half_width // 2
+
+                if (btn_center_x - btn_width // 2 < x < btn_center_x + btn_width // 2 and
+                        y_pos - btn_height // 2 < y < y_pos + btn_height // 2):
+                    print(f"Выбран уровень сложности: {btn_type}")
                     # Здесь будет переход к игре на выбранном уровне
 
+            # Проверка нажатия на кнопки правой половины
+            friend_buttons = [
+                ("word_base", self.window.height * 0.45),
+                ("user_word", self.window.height * 0.3)
+            ]
+
+            for btn_type, y_pos in friend_buttons:
+                btn_height = self.window.height * 0.1
+                btn_width = self.word_from_base.width * (btn_height / self.word_from_base.height)
+                btn_center_x = half_width + half_width // 2
+
+                if (btn_center_x - btn_width // 2 < x < btn_center_x + btn_width // 2 and
+                        y_pos - btn_height // 2 < y < y_pos + btn_height // 2):
+                    print(f"Выбран режим: {btn_type}")
+                    # Здесь будет переход к соответствующему режиму
+
             # Проверка нажатия на кнопку "Назад"
-            back_btn_height = self.window.height / 12
+            back_btn_height = self.window.height / 15
             back_btn_y = back_btn_height * 1.2
             back_btn_width = self.back_btn.width * (back_btn_height / self.back_btn.height)
 
@@ -463,7 +582,11 @@ class LevelView(arcade.View):
                 self.window.show_view(main_view)
 
     def on_key_press(self, key, modifiers):
-        if key == arcade.key.ESCAPE:
+        if key == arcade.key.F11:
+            self.window.set_fullscreen(not self.window.fullscreen)
+        elif key == arcade.key.ESCAPE and self.window.fullscreen:
+            self.window.set_fullscreen(False)
+        elif key == arcade.key.ESCAPE:
             main_view = MainView()
             self.window.show_view(main_view)
 
@@ -472,7 +595,7 @@ class MainWindow(arcade.Window):
     """Главное окно приложения"""
 
     def __init__(self, title):
-        super().__init__(800, 600, title, resizable=True)
+        super().__init__(800, 600, title)
 
     def setup(self):
         main_view = MainView()
