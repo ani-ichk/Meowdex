@@ -27,6 +27,7 @@ class PlayScreen(arcade.View):
         self.fade_active = False
         self.fade_mode = None
         self.fade_speed = 600
+
         self.next_action = None
 
         self.buttons_hover = {

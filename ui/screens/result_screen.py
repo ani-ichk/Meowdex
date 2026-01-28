@@ -1,13 +1,12 @@
 import arcade
+# from ... import состояние игры (выигрыш, проигрыш, ничья, количество полученных рыбок, количество побед подряд)
 
 
-class ProgressScreen(arcade.View):
+class ResultScreen(arcade.View):
     def __init__(self):
         super().__init__()
 
         self.background_texture = arcade.load_texture("data/images/background/blue_shtori.jpg")
-        self.icon_tex = arcade.load_texture("data/images/label/cat_noob_icon.png")
-
 
         self.exit_btn_tex = arcade.load_texture("data/images/button/exit_btn.png")
 
@@ -35,19 +34,6 @@ class ProgressScreen(arcade.View):
                                                   self.height / 2,
                                                   back_width,
                                                   self.height))
-
-        icon_x = self.width / 2 - self.width * 0.15
-        icon_y = self.height / 2 + self.height * 0.15
-
-        icon_height = self.height * 0.30
-        icon_width = self.icon_tex.width * (icon_height / self.icon_tex.height)
-
-        icon_rect = arcade.rect.XYWH(icon_x,
-                                     icon_y,
-                                     icon_width,
-                                     icon_height)
-
-        arcade.draw_texture_rect(self.icon_tex, icon_rect)
 
         center_x = self.width / 2
         btn_height = self.height / 10
