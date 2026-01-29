@@ -1,9 +1,12 @@
 import arcade
+from models.word import Word
 
 
 class WordInputScreen(arcade.View):
-    def __init__(self):
+    def __init__(self, difficulty="easy"):
         super().__init__()
+
+        self.difficulty = difficulty
 
         self.background_texture = arcade.load_texture("data/images/background/blue_shtori.jpg")
         self.computer_input_tex = arcade.load_texture("data/images/button/play_btn.png")
@@ -40,21 +43,16 @@ class WordInputScreen(arcade.View):
         scale = self.height / self.background_texture.height
         back_width = self.background_texture.width * scale
 
-        arcade.draw_texture_rect(self.background_texture,
-                                 arcade.rect.XYWH(self.width / 2,
-                                                  self.height / 2,
-                                                  back_width,
-                                                  self.height))
+        arcade.draw_texture_rect(
+            self.background_texture,
+            arcade.rect.XYWH(self.width / 2, self.height / 2, back_width, self.height)
+        )
 
         center_x = self.width / 2
         center_y = self.height / 2
 
-        left_limit = self.width * 0.15
-        right_limit = self.width * 0.85
-
-
-        max_button_width = (right_limit - left_limit) / 2 * 0.8
         btn_height = self.height / 10
+        max_button_width = self.width * 0.25
 
         robot_scale = min(
             max_button_width / self.computer_input_tex.width,
@@ -72,18 +70,6 @@ class WordInputScreen(arcade.View):
         )
 
         arcade.draw_texture_rect(self.computer_input_tex, self.robot_rect)
-
-        for name, rect in self.buttons_rects.items():
-            if self.buttons_hover[name]:
-                arcade.draw_lrbt_rectangle_outline(
-                    rect.left,
-                    rect.right,
-                    rect.bottom,
-                    rect.top,
-                    arcade.color.YELLOW,
-                    3
-                )
-
         self.buttons_rects["robot"] = self.robot_rect
 
         friend_scale = min(
@@ -102,49 +88,34 @@ class WordInputScreen(arcade.View):
         )
 
         arcade.draw_texture_rect(self.user_input_tex, self.friend_rect)
-
-        for name, rect in self.buttons_rects.items():
-            if self.buttons_hover[name]:
-                arcade.draw_lrbt_rectangle_outline(
-                    rect.left,
-                    rect.right,
-                    rect.bottom,
-                    rect.top,
-                    arcade.color.YELLOW,
-                    3
-                )
-
         self.buttons_rects["friend"] = self.friend_rect
 
         exit_height = btn_height * 0.8
         exit_width = self.exit_btn_tex.width * (exit_height / self.exit_btn_tex.height)
 
-        self.exit_rect = arcade.rect.XYWH(center_x,
-                                          exit_height,
-                                          exit_width,
-                                          exit_height)
+        self.exit_rect = arcade.rect.XYWH(
+            center_x,
+            exit_height,
+            exit_width,
+            exit_height
+        )
 
         arcade.draw_texture_rect(self.exit_btn_tex, self.exit_rect)
+        self.buttons_rects["exit"] = self.exit_rect
 
         for name, rect in self.buttons_rects.items():
-            if self.buttons_hover[name]:
+            if self.buttons_hover.get(name):
                 arcade.draw_lrbt_rectangle_outline(
-                    rect.left,
-                    rect.right,
-                    rect.bottom,
-                    rect.top,
-                    arcade.color.YELLOW,
-                    3
+                    rect.left, rect.right, rect.bottom, rect.top,
+                    arcade.color.YELLOW, 3
                 )
 
         if self.fade_alpha > 0:
-            arcade.draw_lrbt_rectangle_filled(0,
-                                              self.width,
-                                              0,
-                                              self.height,
-                                              (0, 0, 0, int(self.fade_alpha)))
+            arcade.draw_lrbt_rectangle_filled(
+                0, self.width, 0, self.height,
+                (0, 0, 0, int(self.fade_alpha))
+            )
 
-        self.buttons_rects["exit"] = self.exit_rect
 
     def on_update(self, delta_time):
         if not self.fade_active:
@@ -163,20 +134,18 @@ class WordInputScreen(arcade.View):
                 self.fade_alpha = 255
                 self.fade_active = False
 
-                from ui.screens.menu_screen import MenuScreen
-                self.window.show_view(MenuScreen())
-
                 if self.next_action == "menu":
                     from ui.screens.menu_screen import MenuScreen
                     self.window.show_view(MenuScreen())
 
-                elif self.next_action == "single":
+                elif self.next_action == "robot":
                     from ui.screens.game_screen import GameScreen
-                    self.window.show_view(GameScreen())
+                    word = Word.random_by_difficulty(self.difficulty)
+                    self.window.show_view(GameScreen(word))
 
                 elif self.next_action == "friend":
-                    from ui.screens.friend_word_input_screen import FriendWorldInput
-                    self.window.show_view(FriendWorldInput())
+                    from ui.screens.friend_word_input_screen import FriendWordInputScreen
+                    self.window.show_view(FriendWordInputScreen(self.difficulty))
 
     def on_mouse_motion(self, x, y, dx, dy):
         for key in self.buttons_hover:
@@ -192,21 +161,18 @@ class WordInputScreen(arcade.View):
 
         if self.buttons_hover["exit"]:
             self.next_action = "menu"
-            self.fade_active = True
-            self.fade_mode = "off"
-            return
 
-        if self.buttons_hover["friend"]:
-            self.next_action = "single"
-            self.fade_active = True
-            self.fade_mode = "off"
-            return
+        elif self.buttons_hover["robot"]:
+            self.next_action = "robot"
 
-        if self.buttons_hover["robot"]:
+        elif self.buttons_hover["friend"]:
             self.next_action = "friend"
-            self.fade_active = True
-            self.fade_mode = "off"
+
+        else:
             return
+
+        self.fade_active = True
+        self.fade_mode = "off"
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.F11:

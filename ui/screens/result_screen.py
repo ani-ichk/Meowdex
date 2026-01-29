@@ -3,12 +3,15 @@ import arcade
 
 
 class ResultScreen(arcade.View):
-    def __init__(self):
+    def __init__(self, result, fish):
         super().__init__()
 
         self.background_texture = arcade.load_texture("data/images/background/blue_shtori.jpg")
 
         self.exit_btn_tex = arcade.load_texture("data/images/button/exit_btn.png")
+
+        self.result = result
+        self.fish = fish
 
         self.exit_rect = None
         self.exit_hover = False
@@ -34,6 +37,23 @@ class ResultScreen(arcade.View):
                                                   self.height / 2,
                                                   back_width,
                                                   self.height))
+        arcade.draw_text(
+            f"Результат: {self.result}",
+            self.width / 2,
+            self.height * 0.6,
+            arcade.color.WHITE,
+            36,
+            anchor_x="center"
+        )
+
+        arcade.draw_text(
+            f"Получено рыбок: {self.fish}",
+            self.width / 2,
+            self.height * 0.5,
+            arcade.color.YELLOW,
+            28,
+            anchor_x="center"
+        )
 
         center_x = self.width / 2
         btn_height = self.height / 10
