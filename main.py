@@ -2,10 +2,7 @@
 # Чинит проблему масштабирования Windows
 import ctypes
 
-try:
-    ctypes.windll.shcore.SetProcessDpiAwareness(1)
-except:
-    pass
+ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
 
 import arcade
