@@ -1,12 +1,17 @@
 import arcade
 
+from models.progress import Progress
 
 class ProgressScreen(arcade.View):
     def __init__(self):
         super().__init__()
 
+        self.progress = Progress()
+
         self.background_texture = arcade.load_texture("data/images/background/blue_shtori.jpg")
         self.icon_rank_1_tex = arcade.load_texture("data/images/label/rank_1.png")
+
+        self.fish_texture = arcade.load_texture("data/images/label/fish_game.png")
 
         self.current_rank_1_tex = arcade.load_texture("data/images/label/current_rank_1.png")
         self.current_rank_2_tex = arcade.load_texture("data/images/label/current_rank_2.png")
@@ -72,17 +77,58 @@ class ProgressScreen(arcade.View):
         arcade.draw_texture_rect(self.icon_rank_1_tex, icon_rect)
 
         # if 0 < self.player.fish < 20:
-        arcade.draw_texture_rect(self.current_rank_1_tex,
-                                 arcade.rect.XYWH(self.width / 2 + 0.2 + self.current_rank_1_tex.width / 2,
-                                                  self.height / 2 + self.height * 0.25,
-                                                  self.current_rank_1_tex.width * scale,
-                                                  self.current_rank_1_tex.height * scale))
+        current_rank = self.progress.current_rank()
 
-        arcade.draw_texture_rect(self.next_rank_2_tex,
-                                 arcade.rect.XYWH(self.width / 2,
-                                                  self.height / 2,
-                                                  self.next_rank_2_tex.width * scale,
-                                                  self.next_rank_2_tex.height * scale))
+        current_rank_tex = {
+            1: self.current_rank_1_tex,
+            2: self.current_rank_2_tex,
+            3: self.current_rank_3_tex,
+        }.get(current_rank, self.current_rank_1_tex)
+
+        arcade.draw_texture_rect(current_rank_tex,
+                                 arcade.rect.XYWH(self.width / 2 + 0.2 + current_rank_tex.width / 2,
+                                                  self.height / 2 + self.height * 0.25,
+                                                  current_rank_tex.width * scale,
+                                                  current_rank_tex.height * scale))
+
+        next_rank = self.progress.next_rank()
+
+        next_rank_tex = {
+            2: self.next_rank_2_tex,
+            3: self.next_rank_3_tex,
+        }.get(next_rank, self.next_rank_2_tex)
+
+        arcade.draw_texture_rect(next_rank_tex,
+                                 arcade.rect.XYWH(
+                                     self.width / 2, self.height / 2,
+                                     next_rank_tex.width * scale,
+                                     next_rank_tex.height * scale))
+
+        fish_current = self.progress.fish_progress_in_rank()
+        fish_needed = self.progress.next_rank_requirement()
+
+        text_x = self.width / 2 - 70
+        text_y = self.height / 2 - self.next_rank_2_tex.height * scale * 0.3
+
+        arcade.draw_text(
+            f"{fish_current} / {fish_needed}",
+            text_x,
+            text_y,
+            arcade.color.WHITE,
+            font_size=22,
+            anchor_x="left",
+            anchor_y="center"
+        )
+
+        arcade.draw_texture_rect(
+            self.fish_texture,
+            arcade.rect.XYWH(
+                text_x + 120,
+                text_y,
+                self.fish_texture.width * scale * 0.1,
+                self.fish_texture.height * scale * 0.1
+            )
+        )
 
         arcade.draw_texture_rect(self.win_streak_tex,
                                  arcade.rect.XYWH(self.width / 2,
@@ -90,6 +136,22 @@ class ProgressScreen(arcade.View):
                                                   self.win_streak_tex.height * scale / 2 * 1.2,
                                                   self.win_streak_tex.width * scale,
                                                   self.win_streak_tex.height * scale))
+
+        streak_value = self.progress.win_streak
+
+        text_x = self.width / 2 + self.win_streak_tex.width * scale / 2 - 80
+        text_y = self.height / 2 - self.next_rank_2_tex.height * scale / 2 - \
+                 self.win_streak_tex.height * scale / 2 * 1.2
+
+        arcade.draw_text(
+            str(streak_value),
+            text_x,
+            text_y,
+            arcade.color.WHITE,
+            font_size=33,
+            anchor_x="left",
+            anchor_y="center"
+        )
 
         center_x = self.width / 2
         btn_height = self.height / 10
