@@ -102,7 +102,7 @@ class PlayScreen(arcade.View):
                     elif self.next_action == "single":
                         from ui.screens.game_screen import GameScreen
                         word = Word.random_by_difficulty(self.selected_difficulty)
-                        self.window.show_view(GameScreen(word))
+                        self.window.show_view(GameScreen(word.text))
 
 
                     elif self.next_action == "friend":
