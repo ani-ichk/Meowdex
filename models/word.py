@@ -1,5 +1,3 @@
-# модель загаданного слова и состояние его угадывания:
-# само слово, сравнение попыток с загаданным, результат проверки букв (зелёный/ж/к)
 import json
 import random
 from pathlib import Path
@@ -28,9 +26,6 @@ class Word:
         return cls(random.choice(words))
 
     def get_random_word(difficulty: str) -> str:
-        """
-        Возвращает случайное слово из json-файла по сложности
-        """
         path = Path("data/words") / f"{difficulty}.json"
 
         with open(path, "r", encoding="utf-8") as file:
@@ -38,4 +33,3 @@ class Word:
 
         words = data["words"]
         return random.choice(words)
-
