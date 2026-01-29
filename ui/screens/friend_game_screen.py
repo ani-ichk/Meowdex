@@ -1,4 +1,3 @@
-# игра с другом
 import arcade
 
 

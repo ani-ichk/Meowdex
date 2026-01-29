@@ -1,19 +1,19 @@
 import arcade
 from models.word import Word
-from ui.screens.game_screen import GameScreen
+
 
 
 class PlayScreen(arcade.View):
     def __init__(self):
         super().__init__()
 
-        self.singleplayer_label_tex = arcade.load_texture("data/images/button/settings_btn.png")
-        self.with_friend_label_tex = arcade.load_texture("data/images/button/settings_btn.png")
+        self.singleplayer_label_tex = arcade.load_texture("data/images/label/single_mod.png")
+        self.with_friend_label_tex = arcade.load_texture("data/images/label/friend_mod.png")
 
-        self.easy_btn_tex = arcade.load_texture("data/images/button/play_btn.png")
-        self.medium_btn_tex = arcade.load_texture("data/images/button/play_btn.png")
-        self.hard_btn_tex = arcade.load_texture("data/images/button/play_btn.png")
-        self.expert_btn_tex = arcade.load_texture("data/images/button/play_btn.png")
+        self.easy_btn_tex = arcade.load_texture("data/images/button/easy_btn.png")
+        self.medium_btn_tex = arcade.load_texture("data/images/button/medium_btn.png")
+        self.hard_btn_tex = arcade.load_texture("data/images/button/hard_btn.png")
+        self.expert_btn_tex = arcade.load_texture("data/images/button/expert_btn.png")
 
         self.exit_btn_tex = arcade.load_texture("data/images/button/exit_btn.png")
 

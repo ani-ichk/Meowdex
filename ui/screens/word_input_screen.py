@@ -9,7 +9,7 @@ class WordInputScreen(arcade.View):
         self.difficulty = difficulty
 
         self.background_texture = arcade.load_texture("data/images/background/blue_shtori.jpg")
-        self.computer_input_tex = arcade.load_texture("data/images/button/play_btn.png")
+        self.computer_input_tex = arcade.load_texture("data/images/button/me.png")
         self.user_input_tex = arcade.load_texture("data/images/button/play_btn.png")
         self.exit_btn_tex = arcade.load_texture("data/images/button/exit_btn.png")
 

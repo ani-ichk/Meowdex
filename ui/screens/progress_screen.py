@@ -1,6 +1,6 @@
 import arcade
-
 from models.progress import Progress
+
 
 class ProgressScreen(arcade.View):
     def __init__(self):

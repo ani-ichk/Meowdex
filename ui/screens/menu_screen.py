@@ -8,7 +8,7 @@ class MenuScreen(arcade.View):
         self.background_texture = arcade.load_texture("data/images/background/blue_shtori.jpg")
         self.logo_texture = arcade.load_texture("data/images/logo/logo.png")
         self.play_btn_texture = arcade.load_texture("data/images/button/play_btn.png")
-        self.progress_btn_texture = arcade.load_texture("data/images/button/rating_btn.png")
+        self.progress_btn_texture = arcade.load_texture("data/images/button/progress_btn.png")
         self.exit_btn_texture = arcade.load_texture("data/images/button/exit_btn.png")
 
         self.buttons_hover = {
@@ -17,9 +17,9 @@ class MenuScreen(arcade.View):
             "exit": False
         }
 
-        self.logo_start_y = None     # начальная позиция (за экраном)
-        self.logo_target_y = None    # конечная позиция
-        self.logo_current_y = None   # текущая позиция
+        self.logo_start_y = None
+        self.logo_target_y = None
+        self.logo_current_y = None
 
         self.logo_animating = True
         self.logo_anim_time = 0.0
@@ -28,7 +28,7 @@ class MenuScreen(arcade.View):
         self.fade_mode = None
         self.fade_alpha = 0
         self.fade_active = False
-        self.fade_speed = 600  # прозрачность в секунду
+        self.fade_speed = 600
 
         self.next_action = None
 
