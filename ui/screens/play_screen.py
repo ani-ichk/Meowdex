@@ -1,4 +1,6 @@
 import arcade
+from models.word import Word
+from ui.screens.game_screen import GameScreen
 
 
 class PlayScreen(arcade.View):
@@ -27,6 +29,8 @@ class PlayScreen(arcade.View):
         self.fade_active = False
         self.fade_mode = None
         self.fade_speed = 600
+
+        self.selected_difficulty = None
 
         self.next_action = None
 
@@ -97,11 +101,13 @@ class PlayScreen(arcade.View):
 
                     elif self.next_action == "single":
                         from ui.screens.game_screen import GameScreen
-                        self.window.show_view(GameScreen())
+                        word = Word.random_by_difficulty(self.selected_difficulty)
+                        self.window.show_view(GameScreen(word))
+
 
                     elif self.next_action == "friend":
-                        from ui.screens.word_input_screen import WordInputScreen
-                        self.window.show_view(WordInputScreen())
+                        from ui.screens.friend_word_input_screen import FriendWordInputScreen
+                        self.window.show_view(FriendWordInputScreen())
 
     def on_draw(self):
         self.clear()
@@ -248,10 +254,33 @@ class PlayScreen(arcade.View):
 
         for name in self.buttons_hover:
             if self.buttons_hover[name] and name != "exit":
-                if name.startswith("single"):
+
+                if name.startswith("single_easy"):
+                    self.selected_difficulty = "easy"
                     self.next_action = "single"
-                elif name.startswith("friend"):
+
+                elif name.startswith("single_medium"):
+                    self.selected_difficulty = "medium"
+                    self.next_action = "single"
+
+                elif name.startswith("single_hard"):
+                    self.selected_difficulty = "hard"
+                    self.next_action = "single"
+
+                elif name.startswith("single_expert"):
+                    self.selected_difficulty = "expert"
+                    self.next_action = "single"
+
+                elif name.startswith("friend_easy"):
+                    self.selected_difficulty = "easy"
                     self.next_action = "friend"
+
+                elif name.startswith("friend_hard"):
+                    self.selected_difficulty = "hard"
+                    self.next_action = "friend"
+
+                else:
+                    return
 
                 self.screen_state = "closing"
                 return

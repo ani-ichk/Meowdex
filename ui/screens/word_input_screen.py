@@ -138,11 +138,6 @@ class WordInputScreen(arcade.View):
                     from ui.screens.menu_screen import MenuScreen
                     self.window.show_view(MenuScreen())
 
-                elif self.next_action == "robot":
-                    from ui.screens.game_screen import GameScreen
-                    word = Word.random_by_difficulty(self.difficulty)
-                    self.window.show_view(GameScreen(word))
-
                 elif self.next_action == "friend":
                     from ui.screens.friend_word_input_screen import FriendWordInputScreen
                     self.window.show_view(FriendWordInputScreen(self.difficulty))
