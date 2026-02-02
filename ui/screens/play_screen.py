@@ -1,12 +1,20 @@
 import arcade
-from models.word import Word
+from logic.word import Word
+from logic.difficulty import EASY, MEDIUM, NORMAL, HARD, EXPERT
 
+
+DIFFICULTY_MAP = {
+    "easy": EASY,
+    "normal": NORMAL,
+    "hard": HARD
+}
 
 
 class PlayScreen(arcade.View):
     def __init__(self):
         super().__init__()
 
+        self.background_tex = arcade.load_texture("data/images/background/background.png")
         self.singleplayer_label_tex = arcade.load_texture("data/images/label/single_mod.png")
         self.with_friend_label_tex = arcade.load_texture("data/images/label/friend_mod.png")
 
@@ -102,7 +110,10 @@ class PlayScreen(arcade.View):
                     elif self.next_action == "single":
                         from ui.screens.game_screen import GameScreen
                         word = Word.random_by_difficulty(self.selected_difficulty)
-                        self.window.show_view(GameScreen(word.text))
+                        self.window.show_view(GameScreen(
+                            target_word=word.value,
+                            difficulty=self.selected_difficulty))
+
 
 
                     elif self.next_action == "friend":
@@ -112,33 +123,42 @@ class PlayScreen(arcade.View):
     def on_draw(self):
         self.clear()
 
+        scale = self.height / self.background_tex.height
+        back_width = self.background_tex.width * scale
+
+        arcade.draw_texture_rect(self.background_tex,
+                                 arcade.rect.XYWH(
+                                     self.width / 2,
+                                     self.height / 2,
+                                     back_width,
+                                     self.height))
+
         center_x = self.width / 2
         center_y = self.height / 2
 
-        btn_height = self.height / 10
+        btn_height = self.height / 10 * 0.8
         spacing = btn_height * 1.2
 
-        scale = self.height / self.background_tex_left.height
-        width = self.background_tex_left.width * scale
+        scale_shtori = self.height / self.background_tex_left.height
+        width = self.background_tex_left.width * scale_shtori
 
         left_center_x = center_x - width / 2 + btn_height
         right_center_x = center_x + width / 2 - btn_height
 
-        label_height = btn_height * 1.2
+        label_height = self.singleplayer_label_tex.height * scale * 0.7
         label_y = self.height * 5 / 6
-        single_w = self.singleplayer_label_tex.width * (label_height / self.singleplayer_label_tex.height)
-        friend_w = self.with_friend_label_tex.width * (label_height / self.with_friend_label_tex.height)
+        label_w = self.singleplayer_label_tex.width * scale * 0.7
 
         arcade.draw_texture_rect(self.singleplayer_label_tex,
                                  arcade.rect.XYWH(left_center_x,
                                                   label_y,
-                                                  single_w,
+                                                  label_w,
                                                   label_height))
 
         arcade.draw_texture_rect(self.with_friend_label_tex,
                                  arcade.rect.XYWH(right_center_x,
                                                   label_y,
-                                                  friend_w,
+                                                  label_w,
                                                   label_height))
 
         self.buttons_rects.clear()
@@ -149,7 +169,7 @@ class PlayScreen(arcade.View):
             (self.hard_btn_tex, "single_hard"),
             (self.expert_btn_tex, "single_expert"),
         ]
-        start_y = center_y + spacing
+        start_y = center_y + spacing * 2
         for i, (texture, name) in enumerate(single_buttons):
             btn_width = texture.width * (btn_height / texture.height)
             y = start_y - i * spacing
@@ -256,19 +276,19 @@ class PlayScreen(arcade.View):
             if self.buttons_hover[name] and name != "exit":
 
                 if name.startswith("single_easy"):
-                    self.selected_difficulty = "easy"
+                    self.selected_difficulty = EASY
                     self.next_action = "single"
 
                 elif name.startswith("single_medium"):
-                    self.selected_difficulty = "medium"
+                    self.selected_difficulty = MEDIUM
                     self.next_action = "single"
 
                 elif name.startswith("single_hard"):
-                    self.selected_difficulty = "hard"
+                    self.selected_difficulty = HARD
                     self.next_action = "single"
 
                 elif name.startswith("single_expert"):
-                    self.selected_difficulty = "expert"
+                    self.selected_difficulty = EXPERT
                     self.next_action = "single"
 
                 elif name.startswith("friend_easy"):

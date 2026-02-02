@@ -1,5 +1,5 @@
 import arcade
-from models.word import Word
+from logic.word import Word
 
 
 class WordInputScreen(arcade.View):
