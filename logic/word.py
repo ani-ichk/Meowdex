@@ -10,12 +10,12 @@ class Word:
         self.length = len(self.value)
 
     @staticmethod
-    def random_by_difficulty(difficulty: str) -> "Word":
+    def random_by_difficulty(difficulty: str):
         path = Path("data/words/words.json")
 
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         word = random.choice(data[difficulty])
-        return Word(word)
+        return word
 

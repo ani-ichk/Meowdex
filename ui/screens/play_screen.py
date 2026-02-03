@@ -1,13 +1,5 @@
 import arcade
 from logic.word import Word
-from logic.difficulty import EASY, MEDIUM, NORMAL, HARD, EXPERT
-
-
-DIFFICULTY_MAP = {
-    "easy": EASY,
-    "normal": NORMAL,
-    "hard": HARD
-}
 
 
 class PlayScreen(arcade.View):
@@ -64,7 +56,6 @@ class PlayScreen(arcade.View):
         self.screen_state = "closed"
         self.left_position = 0.0
         self.right_position = 0.0
-        self.next_action = None
 
     def on_update(self, delta_time):
         speed = self.animation_speed * delta_time
@@ -111,11 +102,10 @@ class PlayScreen(arcade.View):
                         from ui.screens.game_screen import GameScreen
                         word = Word.random_by_difficulty(self.selected_difficulty)
                         self.window.show_view(GameScreen(
-                            target_word=word.value,
+                            target_word=word,
                             difficulty=self.selected_difficulty))
 
-
-
+                    # передать сложность //////////////////////////////////////////////////////////////////////////\\
                     elif self.next_action == "friend":
                         from ui.screens.friend_word_input_screen import FriendWordInputScreen
                         self.window.show_view(FriendWordInputScreen())
@@ -276,27 +266,27 @@ class PlayScreen(arcade.View):
             if self.buttons_hover[name] and name != "exit":
 
                 if name.startswith("single_easy"):
-                    self.selected_difficulty = EASY
+                    self.selected_difficulty = "easy"
                     self.next_action = "single"
 
                 elif name.startswith("single_medium"):
-                    self.selected_difficulty = MEDIUM
+                    self.selected_difficulty = "medium"
                     self.next_action = "single"
 
                 elif name.startswith("single_hard"):
-                    self.selected_difficulty = HARD
+                    self.selected_difficulty = "hard"
                     self.next_action = "single"
 
                 elif name.startswith("single_expert"):
-                    self.selected_difficulty = EXPERT
+                    self.selected_difficulty = "expert"
                     self.next_action = "single"
 
                 elif name.startswith("friend_easy"):
                     self.selected_difficulty = "easy"
                     self.next_action = "friend"
 
-                elif name.startswith("friend_hard"):
-                    self.selected_difficulty = "hard"
+                elif name.startswith("friend_medium"):
+                    self.selected_difficulty = "medium"
                     self.next_action = "friend"
 
                 else:
