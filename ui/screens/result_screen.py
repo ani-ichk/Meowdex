@@ -33,23 +33,44 @@ class ResultScreen(arcade.View):
         self.background_tex_left = arcade.load_texture("data/images/background/blue_shtori_left.jpg")
         self.background_tex_right = arcade.load_texture("data/images/background/blue_shtori_right.jpg")
 
+        self.difficulty = difficulty
+        self.attempt = attempt
         self.game_res = game_res
 
-        self.exit_rect = None
-        self.exit_hover = False
+        self.home_rect = None
+        self.home_hover = False
+
+        self.screen_state = "closed"
+        self.left_position = 0.0
+        self.right_position = 0.0
+        self.animation_speed = 2.0
 
         self.fade_mode = None
         self.fade_alpha = 0
         self.fade_active = False
         self.fade_speed = 600
 
+        # progress
+        self.fish_gained = 0
+        self.total_fish = 0
+        self.win_streak = 0
+
     def on_show_view(self):
         self.fade_alpha = 255
         self.fade_active = True
         self.fade_mode = "on"
 
+        self.screen_state = "opening"
+
     def on_draw(self):
         self.clear()
+
+        # Блюр добавить после заднего фона ##############
+        arcade.draw_lrbt_rectangle_filled(
+                0, self.width, 0, self.height,
+                (0, 0, 0, 150)
+            )
+        #################################
 
         scale = self.height / self.single_win_tex.height
 
@@ -84,55 +105,75 @@ class ResultScreen(arcade.View):
         # -- из progress_screen.py --
         # повыше по y и побольше в масштабе
         #
-        # exit_height = btn_height * 0.8
-        # exit_width = self.exit_btn_tex.width * (exit_height / self.exit_btn_tex.height)
-        #
-        # self.exit_rect = arcade.rect.XYWH(self.width / 2,
-        #                                   exit_height,
-        #                                   exit_width,
-        #                                   exit_height)
-        #
-        # arcade.draw_texture_rect(self.home_btn_tex, self.exit_rect)
-        #
-        # if self.exit_hover:
-        #     arcade.draw_lrbt_rectangle_outline(self.exit_rect.left,
-        #                                        self.exit_rect.right,
-        #                                        self.exit_rect.bottom,
-        #                                        self.exit_rect.top,
-        #                                        arcade.color.YELLOW,
-        #                                        3)
+        btn_height = self.height / 10
+
+        home_height = btn_height * 0.8
+        home_width = self.home_btn_tex.width * (home_height / self.home_btn_tex.height)
+
+        self.home_rect = arcade.rect.XYWH(self.width / 2,
+                                          home_height,
+                                          home_width,
+                                          home_height)
+
+        arcade.draw_texture_rect(self.home_btn_tex, self.home_rect)
+
+        if self.home_hover:
+            arcade.draw_lrbt_rectangle_outline(self.home_rect.left,
+                                               self.home_rect.right,
+                                               self.home_rect.bottom,
+                                               self.home_rect.top,
+                                               arcade.color.YELLOW,
+                                               3)
 
 
     def on_update(self, delta_time):
-        if not self.fade_active:
-            return
+        speed = self.animation_speed * delta_time
 
-        if self.fade_mode == "on":
-            self.fade_alpha -= self.fade_speed * delta_time
-            if self.fade_alpha <= 0:
-                self.fade_alpha = 0
-                self.fade_active = False
-                self.fade_mode = None
+        if self.screen_state == "opening":
+            self.left_position += speed
+            self.right_position += speed
+            if self.left_position >= 1.0:
+                self.left_position = 1.0
+                self.right_position = 1.0
+                self.screen_state = "opened"
 
-        elif self.fade_mode == "off":
-            self.fade_alpha += self.fade_speed * delta_time
-            if self.fade_alpha >= 255:
-                self.fade_alpha = 255
-                self.fade_active = False
+        elif self.screen_state == "closing":
+            self.left_position -= speed
+            self.right_position -= speed
+            if self.left_position <= 0.0:
+                self.left_position = 0.0
+                self.right_position = 0.0
+                self.screen_state = "closed"
 
-                from ui.screens.menu_screen import MenuScreen
-                self.window.show_view(MenuScreen())
+                self.fade_active = True
+                self.fade_mode = "off"
+        if self.fade_active:
+            if self.fade_mode == "on":
+                self.fade_alpha -= self.fade_speed * delta_time
+                if self.fade_alpha <= 0:
+                    self.fade_alpha = 0
+                    self.fade_active = False
+                    self.fade_mode = None
+
+            elif self.fade_mode == "off":
+                self.fade_alpha += self.fade_speed * delta_time
+                if self.fade_alpha >= 255:
+                    self.fade_alpha = 255
+                    self.fade_active = False
+
+                    from ui.screens.menu_screen import MenuScreen
+                    self.window.show_view(MenuScreen())
 
     def on_mouse_motion(self, x, y, dx, dy):
-        self.exit_hover = False
-        if self.exit_rect:
-            if (self.exit_rect.left <= x <= self.exit_rect.right and
-                    self.exit_rect.bottom <= y <= self.exit_rect.top):
-                self.exit_hover = True
+        self.home_hover = False
+        if self.home_rect:
+            if (self.home_rect.left <= x <= self.home_rect.right and
+                    self.home_rect.bottom <= y <= self.home_rect.top):
+                self.home_hover = True
 
     def on_mouse_press(self, x, y, button, modifiers):
         if button == arcade.MOUSE_BUTTON_LEFT:
-            if self.exit_hover and not self.fade_active:
+            if self.home_hover and not self.fade_active:
                 self.fade_active = True
                 self.fade_mode = "off"
         return

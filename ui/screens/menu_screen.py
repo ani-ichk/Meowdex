@@ -10,10 +10,12 @@ class MenuScreen(arcade.View):
         self.play_btn_texture = arcade.load_texture("data/images/button/play_btn.png")
         self.progress_btn_texture = arcade.load_texture("data/images/button/progress_btn.png")
         self.exit_btn_texture = arcade.load_texture("data/images/button/exit_btn.png")
+        self.instructions_btn_texture = arcade.load_texture("data/images/button/home_btn.png") # UPDATE
 
         self.buttons_hover = {
             "play": False,
             "progress": False,
+            "instructions": False,
             "exit": False
         }
 
@@ -79,6 +81,7 @@ class MenuScreen(arcade.View):
         buttons = [
             (self.play_btn_texture, "play"),
             (self.progress_btn_texture, "progress"),
+            (self.instructions_btn_texture, "instructions"),
             (self.exit_btn_texture, "exit"),
         ]
 
@@ -129,6 +132,9 @@ class MenuScreen(arcade.View):
                     elif self.next_action == "progress":
                         from ui.screens.progress_screen import ProgressScreen
                         self.window.show_view(ProgressScreen())
+                    elif self.next_action == "instructions":
+                        from ui.screens.rules_game_screen import Rules
+                        self.window.show_view(Rules())
             elif self.fade_mode == "on":
                 self.fade_alpha -= self.fade_speed * delta_time
                 if self.fade_alpha <= 0:
@@ -151,7 +157,7 @@ class MenuScreen(arcade.View):
         if button == arcade.MOUSE_BUTTON_LEFT:
             if self.buttons_hover["exit"]:
                 self.window.close()
-            for name in ("play", "progress"):
+            for name in ("play", "progress", "instructions"):
                 if self.buttons_hover[name]:
                     self.next_action = name
                     self.fade_active = True
