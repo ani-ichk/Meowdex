@@ -1,6 +1,6 @@
 import arcade
+from logic.progress import Progress
 
-from models.progress import Progress
 
 class ProgressScreen(arcade.View):
     def __init__(self):
@@ -104,8 +104,11 @@ class ProgressScreen(arcade.View):
                                      next_rank_tex.width * scale,
                                      next_rank_tex.height * scale))
 
-        fish_current = self.progress.fish_progress_in_rank()
-        fish_needed = self.progress.next_rank_requirement()
+        # fish_current = self.progress.fish_progress_in_rank()
+        # fish_needed = self.progress.next_rank_requirement()
+
+        fish_current = 0
+        fish_needed = 10
 
         text_x = self.width / 2 - 70
         text_y = self.height / 2 - self.next_rank_2_tex.height * scale * 0.3

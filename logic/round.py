@@ -1,7 +1,7 @@
 # GameRound - контейнер состояния 1 раунда игры
 # описание одного игрового раунда:
 # слово, количество оставшихся попыток, история введённых слов, результаты проверок
-from models.word import Word
+from logic.word import Word
 
 
 class GameRound:

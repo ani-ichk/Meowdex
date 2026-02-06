@@ -1,5 +1,5 @@
 import arcade
-from models.word import Word
+from logic.word import Word
 
 
 class WordInputScreen(arcade.View):
@@ -9,7 +9,7 @@ class WordInputScreen(arcade.View):
         self.difficulty = difficulty
 
         self.background_texture = arcade.load_texture("data/images/background/blue_shtori.jpg")
-        self.computer_input_tex = arcade.load_texture("data/images/button/play_btn.png")
+        self.computer_input_tex = arcade.load_texture("data/images/button/me.png")
         self.user_input_tex = arcade.load_texture("data/images/button/play_btn.png")
         self.exit_btn_tex = arcade.load_texture("data/images/button/exit_btn.png")
 
@@ -137,11 +137,6 @@ class WordInputScreen(arcade.View):
                 if self.next_action == "menu":
                     from ui.screens.menu_screen import MenuScreen
                     self.window.show_view(MenuScreen())
-
-                elif self.next_action == "robot":
-                    from ui.screens.game_screen import GameScreen
-                    word = Word.random_by_difficulty(self.difficulty)
-                    self.window.show_view(GameScreen(word))
 
                 elif self.next_action == "friend":
                     from ui.screens.friend_word_input_screen import FriendWordInputScreen
