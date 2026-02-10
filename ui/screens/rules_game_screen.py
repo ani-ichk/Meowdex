@@ -11,6 +11,8 @@ class Rules(arcade.View):
         self.background_tex_left = arcade.load_texture("data/images/background/blue_shtori_left.jpg")
         self.background_tex_right = arcade.load_texture("data/images/background/blue_shtori_right.jpg")
 
+        self.panel_tex = arcade.load_texture("data/images/label/rules_grid.png")
+
         self.home_rect = None
         self.home_hover = False
 
@@ -81,36 +83,31 @@ class Rules(arcade.View):
     def on_draw(self):
         self.clear()
 
-        # панель
-        arcade.draw_lrbt_rectangle_filled(
-            self.width * 0.15,
-            self.width * 0.85,
-            self.height * 0.2,
-            self.height * 0.8,
-            (30, 30, 30, 220)
-        )
+        scale = self.height / self.panel_tex.height
 
-        arcade.draw_lrbt_rectangle_outline(
-            self.width * 0.15,
-            self.width * 0.85,
-            self.height * 0.2,
-            self.height * 0.8,
-            arcade.color.WHITE,
-            3
+        arcade.draw_texture_rect(
+            self.panel_tex,
+            arcade.rect.XYWH(
+                self.width / 2,
+                self.height / 2,
+                self.panel_tex.width * scale,
+                self.height * 0.6
+            )
         )
 
         # текст
         arcade.draw_text(
             "ПРАВИЛА ИГРЫ\n\n"
             "• Угадай слово за ограниченное число попыток\n"
-            "• Ошибки приближают поражение\n"
-            "• Чем выше сложность — тем больше награда\n"
-            "• Угадал с первой попытки — x2 рыбок\n"
-            "• Серия побед даёт бонусы",
+            "• За выигрыш идет награда\n"
+            "• Чем выше уровень сложности — тем выше награда\n"
+            "• Угадал с первой попытки — x2 рыбок\n",
             self.width * 0.18,
-            self.height * 0.75,
+            self.height * 0.6,
             arcade.color.WHITE,
-            font_size=20,
+            align = "left",
+            font_name=("Pixeloid Sans", "arial"),
+            font_size=30,
             width=self.width * 0.64,
             multiline=True
         )

@@ -1,6 +1,8 @@
 import arcade
 import json
 from pathlib import Path
+import random
+
 
 PLAYER_PATH = Path("data/player.json")
 
@@ -31,11 +33,19 @@ class ResultScreen(arcade.View):
         self.friend_win_tex = arcade.load_texture("data/images/label/win_result.png")
         self.friend_loss_tex = arcade.load_texture("data/images/label/loss_result.png")
         self.draw_tex = arcade.load_texture("data/images/label/draw_result.png")
+        self.fish_icon_tex = arcade.load_texture("data/images/label/fish_game.png")
 
         self.home_btn_tex = arcade.load_texture("data/images/button/home_btn.png")
 
         self.background_tex_left = arcade.load_texture("data/images/background/blue_shtori_left.jpg")
         self.background_tex_right = arcade.load_texture("data/images/background/blue_shtori_right.jpg")
+
+        self.win_particles = []
+        self.win_particles_active = False
+
+        # Проигрыш
+        self.rain = []
+        self.rain_active = False
 
         self.difficulty = difficulty
         self.attempt = attempt
@@ -65,6 +75,10 @@ class ResultScreen(arcade.View):
         self.fade_mode = "on"
 
         self.screen_state = "opening"
+        if self.game_res == "win":
+            self.spawn_win_particles()
+        elif self.game_res == "loss":
+            self.spawn_rain()
 
         self.apply_result()
 
@@ -90,15 +104,12 @@ class ResultScreen(arcade.View):
             "expert": 8
         }
 
+        # 1. базовая награда по сложности
         fish = BASE_FISH.get(self.difficulty, 0)
 
-        # x2 за первую попытку
+        # 2. первая попытка → x2
         if self.attempt == 1:
             fish *= 2
-
-        # бонус за серию побед (3+)
-        if win_streak >= 2:
-            fish += (win_streak - 1)
 
         return fish
 
@@ -125,6 +136,46 @@ class ResultScreen(arcade.View):
 
         self.save_player(player)
 
+    def spawn_win_particles(self):
+        self.win_particles.clear()
+
+        for _ in range(120):
+            x = random.uniform(0, self.width)
+            y = self.height + random.uniform(0, 200)
+
+            vx = random.uniform(-40, 40)
+            vy = random.uniform(-120, -260)
+
+            radius = random.uniform(4, 7)
+
+            color = random.choice([
+                arcade.color.YELLOW,
+                arcade.color.ORANGE,
+                arcade.color.LIME_GREEN,
+                arcade.color.SKY_BLUE,
+                arcade.color.PINK
+            ])
+
+            self.win_particles.append(
+                [x, y, vx, vy, radius, color]
+            )
+
+        self.win_particles_active = True
+
+    def spawn_rain(self):
+        self.rain.clear()
+
+        for _ in range(160):
+            x = random.uniform(0, self.width)
+            y = random.uniform(0, self.height)
+
+            speed = random.uniform(300, 600)
+            length = random.uniform(10, 20)
+
+            self.rain.append([x, y, speed, length])
+
+        self.rain_active = True
+
     def on_draw(self):
         self.clear()
 
@@ -134,6 +185,26 @@ class ResultScreen(arcade.View):
                 (0, 0, 0, 150)
             )
         #################################
+        # отрисовка частиц
+        if self.win_particles_active:
+            for x, y, vx, vy, radius, color in self.win_particles:
+                arcade.draw_circle_filled(
+                    x,
+                    y,
+                    radius,
+                    color
+                )
+
+        if self.rain_active:
+            for x, y, speed, length in self.rain:
+                arcade.draw_line(
+                    x,
+                    y,
+                    x,
+                    y + length,
+                    arcade.color.SLATE_GRAY,
+                    2
+                )
 
         scale = self.height / self.single_win_tex.height
 
@@ -143,6 +214,34 @@ class ResultScreen(arcade.View):
                                                       self.height / 2,
                                                       self.single_win_tex.width * scale,
                                                       self.height))
+        if self.game_res == "win":
+            y_pos = self.height * 0.40
+
+            # Текст "+X"
+            arcade.draw_text(
+                f"+{self.fish_gained}",
+                self.width / 2 - 30,
+                y_pos,
+                arcade.color.GOLD,
+                font_size=42,
+                anchor_x="right",
+                anchor_y="center",
+                bold=True
+            )
+
+            # Иконка рыбки
+            icon_size = 100
+            arcade.draw_texture_rect(
+                self.fish_icon_tex,
+                arcade.rect.XYWH(
+                    self.width / 2 + 10,
+                    y_pos,
+                    icon_size,
+                    icon_size
+                )
+            )
+
+
         elif self.game_res == "loss":
             arcade.draw_texture_rect(self.single_loss_tex,
                                     arcade.rect.XYWH(self.width / 2,
@@ -244,6 +343,23 @@ class ResultScreen(arcade.View):
 
                     from ui.screens.menu_screen import MenuScreen
                     self.window.show_view(MenuScreen())
+        if self.win_particles_active:
+            for p in self.win_particles:
+                p[0] += p[2] * delta_time  # x
+                p[1] += p[3] * delta_time  # y
+
+            self.win_particles = [
+                p for p in self.win_particles
+                if p[1] > -50
+            ]
+
+        if self.rain_active:
+            for drop in self.rain:
+                drop[1] -= drop[2] * delta_time
+
+                if drop[1] < -drop[3]:
+                    drop[0] = random.uniform(0, self.width)
+                    drop[1] = self.height + random.uniform(0, 200)
 
     def on_mouse_motion(self, x, y, dx, dy):
         self.home_hover = False

@@ -1,5 +1,10 @@
+import json
+
 import arcade
 from logic.progress import Progress
+from pathlib import Path
+
+PLAYER_PATH = Path("data/player.json")
 
 
 class ProgressScreen(arcade.View):
@@ -46,10 +51,23 @@ class ProgressScreen(arcade.View):
         self.fade_active = False
         self.fade_speed = 600
 
+        self.fish_current = 0
+
     def on_show_view(self):
         self.fade_alpha = 255
         self.fade_active = True
         self.fade_mode = "on"
+
+    def load_player(self):
+        if not PLAYER_PATH.exists():
+            return {
+                "rank": 0,
+                "fishes": 0,
+                "win_streak": 0
+            }
+
+        with open(PLAYER_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
 
     def on_draw(self):
         self.clear()
@@ -106,15 +124,16 @@ class ProgressScreen(arcade.View):
 
         # fish_current = self.progress.fish_progress_in_rank()
         # fish_needed = self.progress.next_rank_requirement()
+        with open(PLAYER_PATH, "r", encoding="utf-8") as f:
+            self.fish_current  = json.load(f)
 
-        fish_current = 0
         fish_needed = 10
 
         text_x = self.width / 2 - 70
         text_y = self.height / 2 - self.next_rank_2_tex.height * scale * 0.3
 
         arcade.draw_text(
-            f"{fish_current} / {fish_needed}",
+            f"{self.fish_current["fishes"]}",
             text_x,
             text_y,
             arcade.color.WHITE,
