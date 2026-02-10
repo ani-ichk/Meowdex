@@ -1,4 +1,3 @@
-# Правила игры
 import arcade
 
 
@@ -11,25 +10,35 @@ class Rules(arcade.View):
         self.background_tex_left = arcade.load_texture("data/images/background/blue_shtori_left.jpg")
         self.background_tex_right = arcade.load_texture("data/images/background/blue_shtori_right.jpg")
 
+        self.pashalka_tex = arcade.load_texture("data/images/background/pashalochka.png")
+
         self.panel_tex = arcade.load_texture("data/images/label/rules_grid.png")
 
         self.home_rect = None
         self.home_hover = False
 
-        # --- ЛОГИКА ШТОРОК ---
         self.screen_state = "closed"
         self.left_position = 0.0
         self.right_position = 0.0
         self.animation_speed = 2.0
 
-        # --- ЛОГИКА СВЕТА ---
         self.fade_alpha = 0
         self.fade_active = False
         self.fade_mode = None
         self.fade_speed = 600
 
+        self.world_offset_x = 0
+        self.move_speed = 300
+
+        self.move_left = False
+        self.move_right = False
+
+        self.max_offset = (
+            self.background_tex_left.width
+            + self.pashalka_tex.width * 2
+        )
+
     def on_show_view(self):
-        # Свет включается
         self.fade_alpha = 255
         self.fade_active = True
         self.fade_mode = "on"
@@ -38,10 +47,13 @@ class Rules(arcade.View):
         self.left_position = 0.0
         self.right_position = 0.0
 
+        self.world_offset_x = 0
+        self.move_left = False
+        self.move_right = False
+
     def on_update(self, delta_time):
         speed = self.animation_speed * delta_time
 
-        # ---------- ШТОРКИ ----------
         if self.screen_state == "opening":
             self.left_position += speed
             self.right_position += speed
@@ -58,11 +70,20 @@ class Rules(arcade.View):
                 self.right_position = 0.0
                 self.screen_state = "closed"
 
-                # После закрытия — выключаем свет
                 self.fade_active = True
                 self.fade_mode = "off"
 
-        # ---------- СВЕТ ----------
+        if self.screen_state == "opened":
+            if self.move_left:
+                self.world_offset_x += self.move_speed * delta_time
+                if self.world_offset_x > self.max_offset:
+                    self.world_offset_x = self.max_offset
+
+            if self.move_right:
+                self.world_offset_x -= self.move_speed * delta_time
+                if self.world_offset_x < 0:
+                    self.world_offset_x = 0
+
         if self.fade_active:
             if self.fade_mode == "on":
                 self.fade_alpha -= self.fade_speed * delta_time
@@ -83,42 +104,51 @@ class Rules(arcade.View):
     def on_draw(self):
         self.clear()
 
-        scale = self.height / self.panel_tex.height
-
         arcade.draw_texture_rect(
             self.panel_tex,
             arcade.rect.XYWH(
-                self.width / 2,
+                self.width / 2 + self.world_offset_x,
                 self.height / 2,
-                self.panel_tex.width * scale,
+                self.panel_tex.width * (self.height / self.panel_tex.height),
                 self.height * 0.6
             )
         )
 
-        # текст
+        arcade.draw_texture_rect(
+            self.pashalka_tex,
+            arcade.rect.XYWH(
+                self.width / 2
+                - self.background_tex_left.width
+                - self.pashalka_tex.width * 2
+                + self.world_offset_x,
+                self.height / 2,
+                self.pashalka_tex.width,
+                self.height * 0.6
+            )
+        )
+
         arcade.draw_text(
             "ПРАВИЛА ИГРЫ\n\n"
             "• Угадай слово за ограниченное число попыток\n"
             "• За выигрыш идет награда\n"
             "• Чем выше уровень сложности — тем выше награда\n"
             "• Угадал с первой попытки — x2 рыбок\n",
-            self.width * 0.18,
+            self.width * 0.18 + self.world_offset_x,
             self.height * 0.6,
             arcade.color.WHITE,
-            align = "left",
+            align="center",
             font_name=("Pixeloid Sans", "arial"),
             font_size=30,
             width=self.width * 0.64,
             multiline=True
         )
 
-        # кнопка домой
         btn_height = self.height / 10
         home_height = btn_height * 0.8
         home_width = self.home_btn_tex.width * (home_height / self.home_btn_tex.height)
 
         self.home_rect = arcade.rect.XYWH(
-            self.width / 2,
+            self.width / 2 + self.world_offset_x,
             home_height,
             home_width,
             home_height
@@ -136,7 +166,6 @@ class Rules(arcade.View):
                 3
             )
 
-        # шторки
         width = self.background_tex_left.width * self.height / self.background_tex_left.height
         center_y = self.height / 2
 
@@ -153,12 +182,29 @@ class Rules(arcade.View):
             arcade.rect.XYWH(right_x, center_y, width, self.height)
         )
 
-        # затемнение
         if self.fade_alpha > 0:
             arcade.draw_lrbt_rectangle_filled(
                 0, self.width, 0, self.height,
                 (0, 0, 0, int(self.fade_alpha))
             )
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.F11:
+            self.window.set_fullscreen(not self.window.fullscreen)
+
+        elif key == arcade.key.ESCAPE and self.window.fullscreen:
+            self.window.set_fullscreen(False)
+
+        elif key == arcade.key.LEFT:
+            self.move_left = True
+        elif key == arcade.key.RIGHT:
+            self.move_right = True
+
+    def on_key_release(self, key, modifiers):
+        if key == arcade.key.LEFT:
+            self.move_left = False
+        elif key == arcade.key.RIGHT:
+            self.move_right = False
 
     def on_mouse_motion(self, x, y, dx, dy):
         self.home_hover = False
@@ -171,7 +217,6 @@ class Rules(arcade.View):
         if button != arcade.MOUSE_BUTTON_LEFT:
             return
 
-        # Первый клик — открываем шторки (как в PlayScreen)
         if self.screen_state == "closed":
             self.screen_state = "opening"
             return
@@ -181,9 +226,3 @@ class Rules(arcade.View):
 
         if self.home_hover:
             self.screen_state = "closing"
-
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.F11:
-            self.window.set_fullscreen(not self.window.fullscreen)
-        elif key == arcade.key.ESCAPE and self.window.fullscreen:
-            self.window.set_fullscreen(False)
