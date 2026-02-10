@@ -133,7 +133,7 @@ class ProgressScreen(arcade.View):
         text_y = self.height / 2 - self.next_rank_2_tex.height * scale * 0.3
 
         arcade.draw_text(
-            f"{self.fish_current["fishes"]} / {fish_needed}",
+            f"{self.fish_current["fishes"]}",
             text_x,
             text_y,
             arcade.color.WHITE,
