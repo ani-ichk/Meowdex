@@ -1,4 +1,8 @@
 import arcade
+import json
+from pathlib import Path
+
+PLAYER_PATH = Path("data/player.json")
 
 # ДОБАВИТЬ БЛЮР НА ЗАДНИЙ ФОН
 
@@ -22,11 +26,11 @@ class ResultScreen(arcade.View):
 
         self.background_texture = arcade.load_texture("data/images/background/blue_shtori.jpg")
 
-        self.single_win_tex = arcade.load_texture("data/images/label")
-        self.single_loss_tex = arcade.load_texture("data/images/label")
-        self.friend_win_tex = arcade.load_texture("data/images/label")
-        self.friend_loss_tex = arcade.load_texture("data/images/label")
-        self.draw_tex = arcade.load_texture("data/images/label")
+        self.single_win_tex = arcade.load_texture("data/images/label/win_result.png")
+        self.single_loss_tex = arcade.load_texture("data/images/label/loss_result.png")
+        self.friend_win_tex = arcade.load_texture("data/images/label/win_result.png")
+        self.friend_loss_tex = arcade.load_texture("data/images/label/loss_result.png")
+        self.draw_tex = arcade.load_texture("data/images/label/draw_result.png")
 
         self.home_btn_tex = arcade.load_texture("data/images/button/home_btn.png")
 
@@ -52,7 +56,7 @@ class ResultScreen(arcade.View):
 
         # progress
         self.fish_gained = 0
-        self.total_fish = 0
+        self.fishes = 0
         self.win_streak = 0
 
     def on_show_view(self):
@@ -61,6 +65,65 @@ class ResultScreen(arcade.View):
         self.fade_mode = "on"
 
         self.screen_state = "opening"
+
+        self.apply_result()
+
+    def load_player(self):
+        if not PLAYER_PATH.exists():
+            return {
+                "fishes": 0,
+                "win_streak": 0
+            }
+
+        with open(PLAYER_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    def save_player(self, data):
+        with open(PLAYER_PATH, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+
+    def calculate_fish(self, win_streak: int):
+        BASE_FISH = {
+            "easy": 2,
+            "normal": 4,
+            "hard": 6,
+            "expert": 8
+        }
+
+        fish = BASE_FISH.get(self.difficulty, 0)
+
+        # x2 за первую попытку
+        if self.attempt == 1:
+            fish *= 2
+
+        # бонус за серию побед (3+)
+        if win_streak >= 2:
+            fish += (win_streak - 1)
+
+        return fish
+
+    def apply_result(self):
+        player = self.load_player()
+
+        if self.game_res == "win":
+            fish = self.calculate_fish(player["win_streak"])
+            self.fish_gained = fish
+
+            player["fishes"] += fish
+            player["win_streak"] += 1
+
+        elif self.game_res == "loss":
+            self.fish_gained = 0
+            player["win_streak"] = 0
+
+        else:  # draw / friend / etc
+            self.fish_gained = 0
+
+        self.fishes = player.get("fishes", 0)
+
+        self.win_streak = player["win_streak"]
+
+        self.save_player(player)
 
     def on_draw(self):
         self.clear()
@@ -80,6 +143,25 @@ class ResultScreen(arcade.View):
                                                       self.height / 2,
                                                       self.single_win_tex.width * scale,
                                                       self.height))
+        elif self.game_res == "loss":
+            arcade.draw_texture_rect(self.single_loss_tex,
+                                    arcade.rect.XYWH(self.width / 2,
+                                                    self.height / 2,
+                                                    self.single_win_tex.width * scale,
+                                                    self.height))
+        elif self.game_res in ("draw", "left_win", "right_win", "all_loss"):
+            arcade.draw_texture_rect(self.draw_tex,
+                                     arcade.rect.XYWH(self.width / 2,
+                                                      self.height / 2,
+                                                      self.single_win_tex.width * scale,
+                                                      self.height))
+        else:
+            arcade.draw_texture_rect(self.single_loss_tex,
+                                     arcade.rect.XYWH(self.width / 2,
+                                                      self.height / 2,
+                                                      self.single_win_tex.width * scale,
+                                                      self.height))
+
 
             # считаем сколько рыбок начислить и передать в текст
             # в зависимости от СЛОЖНОСТИ, НОМЕРА ПОПЫТКИ и СЕРИИ ПОБЕД (берём из player.json)
@@ -87,21 +169,21 @@ class ResultScreen(arcade.View):
             # •	серия побед (3+ подряд): +1 рыбка к каждой следующей победе в серии
             # открытие чтение запись фала
             # РИСУЕМ ТЕКСТ self.width / 2, self.height / 2
-            # ЗАГРУЖАЕМ В ПРОГРЕСС
+            # ЗАГРУЖАЕМ В ПРОГРЕСС (Meowdex/logic/progres.py)
 
-        elif self.game_res == "loss":
-            arcade.draw_texture_rect(self.single_loss_tex,
-                                     arcade.rect.XYWH(self.width / 2,
-                                                      self.height / 2,
-                                                      self.single_win_tex.width * scale,
-                                                      self.height))
-
-        elif self.game_res == "draw" or "left_win" or "right_win" or "all_loss":
-            arcade.draw_texture_rect(self.single_win_tex,
-                                     arcade.rect.XYWH(self.width / 2,
-                                                      self.height / 2,
-                                                      self.single_win_tex.width * scale,
-                                                      self.height))
+        # elif self.game_res == "loss":
+        #     arcade.draw_texture_rect(self.single_loss_tex,
+        #                              arcade.rect.XYWH(self.width / 2,
+        #                                               self.height / 2,
+        #                                               self.single_win_tex.width * scale,
+        #                                               self.height))
+        #
+        # elif self.game_res == "draw" or "left_win" or "right_win" or "all_loss":
+        #     arcade.draw_texture_rect(self.single_win_tex,
+        #                              arcade.rect.XYWH(self.width / 2,
+        #                                               self.height / 2,
+        #                                               self.single_win_tex.width * scale,
+        #                                               self.height))
         # -- из progress_screen.py --
         # повыше по y и побольше в масштабе
         #
@@ -124,7 +206,6 @@ class ResultScreen(arcade.View):
                                                self.home_rect.top,
                                                arcade.color.YELLOW,
                                                3)
-
 
     def on_update(self, delta_time):
         speed = self.animation_speed * delta_time

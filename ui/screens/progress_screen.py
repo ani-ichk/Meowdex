@@ -146,6 +146,7 @@ class ProgressScreen(arcade.View):
         text_y = self.height / 2 - self.next_rank_2_tex.height * scale / 2 - \
                  self.win_streak_tex.height * scale / 2 * 1.2
 
+
         arcade.draw_text(
             str(streak_value),
             text_x,
