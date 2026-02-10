@@ -42,6 +42,7 @@ class ResultScreen(arcade.View):
 
         self.win_particles = []
         self.win_particles_active = False
+
         # Проигрыш
         self.rain = []
         self.rain_active = False
