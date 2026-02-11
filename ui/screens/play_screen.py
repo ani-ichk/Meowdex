@@ -107,8 +107,10 @@ class PlayScreen(arcade.View):
 
                     # передать сложность //////////////////////////////////////////////////////////////////////////\\
                     elif self.next_action == "friend":
-                        from ui.screens.friend_word_input_screen import FriendWordInputScreen
-                        self.window.show_view(FriendWordInputScreen())
+                        from ui.screens.playing_friend_computer import PlayFriendComputer
+                        word = Word.random_by_difficulty(self.selected_difficulty)
+                        self.window.show_view(PlayFriendComputer(
+                            difficulty=self.selected_difficulty))
 
     def on_draw(self):
         self.clear()

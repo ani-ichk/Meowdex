@@ -246,6 +246,11 @@ class GameScreen(arcade.View):
             self.current_col += 1
 
     def on_key_press(self, key, modifiers):
+        if key == arcade.key.F11:
+            self.window.set_fullscreen(not self.window.fullscreen)
+        elif key == arcade.key.ESCAPE and self.window.fullscreen:
+            self.window.set_fullscreen(False)
+
         if key == arcade.key.BACKSPACE:
             if self.current_col > 0:
                 self.current_col -= 1

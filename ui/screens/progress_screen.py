@@ -67,7 +67,8 @@ class ProgressScreen(arcade.View):
             }
 
         with open(PLAYER_PATH, "r", encoding="utf-8") as f:
-            return json.load(f)
+            self.fish_current = json.load(f)
+            return self.fish_current
 
     def on_draw(self):
         self.clear()
@@ -127,7 +128,7 @@ class ProgressScreen(arcade.View):
         with open(PLAYER_PATH, "r", encoding="utf-8") as f:
             self.fish_current  = json.load(f)
 
-        fish_needed = 10
+        # fish_needed = 10
 
         text_x = self.width / 2 - 70
         text_y = self.height / 2 - self.next_rank_2_tex.height * scale * 0.3

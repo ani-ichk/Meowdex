@@ -3,24 +3,8 @@ import json
 from pathlib import Path
 import random
 
-
 PLAYER_PATH = Path("data/player.json")
 
-# ДОБАВИТЬ БЛЮР НА ЗАДНИЙ ФОН
-
-# открытие/закрытие шторок и включение/выключение света БУКВАЛЬНО как в плэй_скрин:
-# когда открывается окно, то:
-# - включается свет
-# - после этого шторки открываются БЕЗ НАЖАТИЯ просто открываются
-# когда нажали на кнопку home_btn:
-# - закрыли шторы
-# - выключили свет
-# - выполняем выход к окну меню
-
-# логика начисления рыбок
-
-# перенести логику progress.py СЮДА
-# после переноса логики из progress.py, progress.py удаляется -> поломка в progress_screen.py
 
 class ResultScreen(arcade.View):
     def __init__(self, difficulty, attempt, game_res):
@@ -40,12 +24,12 @@ class ResultScreen(arcade.View):
         self.background_tex_left = arcade.load_texture("data/images/background/blue_shtori_left.jpg")
         self.background_tex_right = arcade.load_texture("data/images/background/blue_shtori_right.jpg")
 
-        self.win_particles = []
-        self.win_particles_active = False
+        # Частицы для разных результатов
+        self.win_particles = []  # Для победы (золотые/цветные)
+        self.rain = []  # Для проигрыша (дождь)
+        self.draw_particles = []  # Для ничьей (нейтральные частицы)
 
-        # Проигрыш
-        self.rain = []
-        self.rain_active = False
+        self.particles_active = False
 
         self.difficulty = difficulty
         self.attempt = attempt
@@ -75,10 +59,24 @@ class ResultScreen(arcade.View):
         self.fade_mode = "on"
 
         self.screen_state = "opening"
+
+        # Создаем частицы в зависимости от результата
         if self.game_res == "win":
             self.spawn_win_particles()
+            self.particles_active = True
         elif self.game_res == "loss":
             self.spawn_rain()
+            self.particles_active = True
+        elif self.game_res == "draw":
+            self.spawn_draw_particles()
+            self.particles_active = True
+        elif self.game_res == "all_loss":
+            self.spawn_rain()  # Для all_loss тоже дождь
+            self.particles_active = True
+        elif self.game_res in ("left_win", "right_win"):
+            # Для раздельного результата создаем оба типа частиц
+            self.spawn_split_particles()
+            self.particles_active = True
 
         self.apply_result()
 
@@ -101,7 +99,9 @@ class ResultScreen(arcade.View):
             "easy": 2,
             "normal": 4,
             "hard": 6,
-            "expert": 8
+            "expert": 8,
+            "computer": 5,  # Для игры с компьютером
+            "friend": 3  # Для игры с другом
         }
 
         # 1. базовая награда по сложности
@@ -111,11 +111,16 @@ class ResultScreen(arcade.View):
         if self.attempt == 1:
             fish *= 2
 
+        # 3. бонус за серию побед (только для одиночной игры)
+        if self.difficulty in ["easy", "normal", "hard", "expert"] and win_streak >= 3:
+            fish += (win_streak - 2)  # +1 за каждую победу после 3-й
+
         return fish
 
     def apply_result(self):
         player = self.load_player()
 
+        # Начисляем рыбки только за одиночные победы
         if self.game_res == "win":
             fish = self.calculate_fish(player["win_streak"])
             self.fish_gained = fish
@@ -127,11 +132,11 @@ class ResultScreen(arcade.View):
             self.fish_gained = 0
             player["win_streak"] = 0
 
-        else:  # draw / friend / etc
+        else:  # draw / left_win / right_win / all_loss
             self.fish_gained = 0
+            # Для режимов с другом/компьютером не влияем на серию побед
 
         self.fishes = player.get("fishes", 0)
-
         self.win_streak = player["win_streak"]
 
         self.save_player(player)
@@ -150,6 +155,7 @@ class ResultScreen(arcade.View):
 
             color = random.choice([
                 arcade.color.YELLOW,
+                arcade.color.GOLD,
                 arcade.color.ORANGE,
                 arcade.color.LIME_GREEN,
                 arcade.color.SKY_BLUE,
@@ -159,8 +165,6 @@ class ResultScreen(arcade.View):
             self.win_particles.append(
                 [x, y, vx, vy, radius, color]
             )
-
-        self.win_particles_active = True
 
     def spawn_rain(self):
         self.rain.clear()
@@ -174,50 +178,120 @@ class ResultScreen(arcade.View):
 
             self.rain.append([x, y, speed, length])
 
-        self.rain_active = True
+    def spawn_draw_particles(self):
+        """Частицы для ничьей (нейтральные, серебристые)"""
+        self.draw_particles.clear()
+
+        for _ in range(100):
+            x = random.uniform(0, self.width)
+            y = self.height + random.uniform(0, 200)
+
+            vx = random.uniform(-30, 30)
+            vy = random.uniform(-80, -180)
+
+            radius = random.uniform(3, 6)
+
+            color = random.choice([
+                arcade.color.SILVER,
+                arcade.color.LIGHT_GRAY,
+                arcade.color.GRAY,
+                arcade.color.SLATE_GRAY
+            ])
+
+            self.draw_particles.append(
+                [x, y, vx, vy, radius, color]
+            )
+
+    def spawn_split_particles(self):
+        """Создает частицы для раздельного результата (победа+проигрыш)"""
+        self.win_particles.clear()
+        self.rain.clear()
+
+        # Частицы победы для левой или правой стороны
+        if self.game_res == "left_win":
+            # Победа слева, проигрыш справа
+            for _ in range(60):  # Меньше частиц, так как только половина экрана
+                x = random.uniform(0, self.width / 2)  # Только левая половина
+                y = self.height + random.uniform(0, 200)
+
+                vx = random.uniform(-20, 20)
+                vy = random.uniform(-120, -260)
+                radius = random.uniform(4, 7)
+                color = random.choice([arcade.color.YELLOW, arcade.color.GOLD, arcade.color.ORANGE])
+
+                self.win_particles.append([x, y, vx, vy, radius, color])
+
+            # Дождь для правой половины
+            for _ in range(80):
+                x = random.uniform(self.width / 2, self.width)  # Только правая половина
+                y = random.uniform(0, self.height)
+                speed = random.uniform(300, 600)
+                length = random.uniform(10, 20)
+                self.rain.append([x, y, speed, length])
+
+        elif self.game_res == "right_win":
+            # Победа справа, проигрыш слева
+            for _ in range(60):
+                x = random.uniform(self.width / 2, self.width)  # Только правая половина
+                y = self.height + random.uniform(0, 200)
+
+                vx = random.uniform(-20, 20)
+                vy = random.uniform(-120, -260)
+                radius = random.uniform(4, 7)
+                color = random.choice([arcade.color.YELLOW, arcade.color.GOLD, arcade.color.ORANGE])
+
+                self.win_particles.append([x, y, vx, vy, radius, color])
+
+            # Дождь для левой половины
+            for _ in range(80):
+                x = random.uniform(0, self.width / 2)  # Только левая половина
+                y = random.uniform(0, self.height)
+                speed = random.uniform(300, 600)
+                length = random.uniform(10, 20)
+                self.rain.append([x, y, speed, length])
 
     def on_draw(self):
         self.clear()
 
-        # Блюр добавить после заднего фона ##############
+        # Блюр
         arcade.draw_lrbt_rectangle_filled(
-                0, self.width, 0, self.height,
-                (0, 0, 0, 150)
-            )
-        #################################
-        # отрисовка частиц
-        if self.win_particles_active:
-            for x, y, vx, vy, radius, color in self.win_particles:
-                arcade.draw_circle_filled(
-                    x,
-                    y,
-                    radius,
-                    color
-                )
+            0, self.width, 0, self.height,
+            (0, 0, 0, 150)
+        )
 
-        if self.rain_active:
-            for x, y, speed, length in self.rain:
-                arcade.draw_line(
-                    x,
-                    y,
-                    x,
-                    y + length,
-                    arcade.color.SLATE_GRAY,
-                    2
-                )
+        # Отрисовка частиц
+        if self.particles_active:
+            if self.game_res in ("win", "draw"):
+                for x, y, vx, vy, radius, color in self.win_particles:
+                    arcade.draw_circle_filled(x, y, radius, color)
+
+            if self.game_res in ("loss", "all_loss"):
+                for x, y, speed, length in self.rain:
+                    arcade.draw_line(x, y, x, y + length, arcade.color.SLATE_GRAY, 2)
+
+            if self.game_res == "draw":
+                for x, y, vx, vy, radius, color in self.draw_particles:
+                    arcade.draw_circle_filled(x, y, radius, color)
+
+            if self.game_res in ("left_win", "right_win"):
+                for x, y, vx, vy, radius, color in self.win_particles:
+                    arcade.draw_circle_filled(x, y, radius, color)
+                for x, y, speed, length in self.rain:
+                    arcade.draw_line(x, y, x, y + length, arcade.color.SLATE_GRAY, 2)
 
         scale = self.height / self.single_win_tex.height
 
+        # Определяем, какой результат отображать
         if self.game_res == "win":
+            # Одиночная победа
             arcade.draw_texture_rect(self.single_win_tex,
                                      arcade.rect.XYWH(self.width / 2,
                                                       self.height / 2,
                                                       self.single_win_tex.width * scale,
                                                       self.height))
-        if self.game_res == "win":
-            y_pos = self.height * 0.40
 
-            # Текст "+X"
+            # Награда рыбками
+            y_pos = self.height * 0.40
             arcade.draw_text(
                 f"+{self.fish_gained}",
                 self.width / 2 - 30,
@@ -228,8 +302,6 @@ class ResultScreen(arcade.View):
                 anchor_y="center",
                 bold=True
             )
-
-            # Иконка рыбки
             icon_size = 100
             arcade.draw_texture_rect(
                 self.fish_icon_tex,
@@ -241,53 +313,55 @@ class ResultScreen(arcade.View):
                 )
             )
 
-
         elif self.game_res == "loss":
             arcade.draw_texture_rect(self.single_loss_tex,
-                                    arcade.rect.XYWH(self.width / 2,
-                                                    self.height / 2,
-                                                    self.single_win_tex.width * scale,
-                                                    self.height))
-        elif self.game_res in ("draw", "left_win", "right_win", "all_loss"):
+                                     arcade.rect.XYWH(self.width / 2,
+                                                      self.height / 2,
+                                                      self.single_win_tex.width * scale,
+                                                      self.height))
+
+        elif self.game_res == "left_win":
+            arcade.draw_texture_rect(self.friend_win_tex,
+                                     arcade.rect.XYWH(self.width / 4,
+                                                      self.height / 2,
+                                                      self.single_win_tex.width * scale / 2,
+                                                      self.height))
+            arcade.draw_texture_rect(self.friend_loss_tex,
+                                     arcade.rect.XYWH(self.width * 3 / 4,
+                                                      self.height / 2,
+                                                      self.single_win_tex.width * scale / 2,
+                                                      self.height))
+
+        elif self.game_res == "right_win":
+            arcade.draw_texture_rect(self.friend_loss_tex,
+                                     arcade.rect.XYWH(self.width / 4,
+                                                      self.height / 2,
+                                                      self.single_win_tex.width * scale / 2,
+                                                      self.height))
+            arcade.draw_texture_rect(self.friend_win_tex,
+                                     arcade.rect.XYWH(self.width * 3 / 4,
+                                                      self.height / 2,
+                                                      self.single_win_tex.width * scale / 2,
+                                                      self.height))
+
+        elif self.game_res == "draw":
+            # Ничья
             arcade.draw_texture_rect(self.draw_tex,
                                      arcade.rect.XYWH(self.width / 2,
                                                       self.height / 2,
                                                       self.single_win_tex.width * scale,
                                                       self.height))
-        else:
-            arcade.draw_texture_rect(self.single_loss_tex,
+
+        elif self.game_res == "all_loss":
+            # Оба проиграли
+            arcade.draw_texture_rect(self.draw_tex,
                                      arcade.rect.XYWH(self.width / 2,
                                                       self.height / 2,
                                                       self.single_win_tex.width * scale,
                                                       self.height))
 
-
-            # считаем сколько рыбок начислить и передать в текст
-            # в зависимости от СЛОЖНОСТИ, НОМЕРА ПОПЫТКИ и СЕРИИ ПОБЕД (берём из player.json)
-            # •	угадал с 1 попытки: x2 рыбок
-            # •	серия побед (3+ подряд): +1 рыбка к каждой следующей победе в серии
-            # открытие чтение запись фала
-            # РИСУЕМ ТЕКСТ self.width / 2, self.height / 2
-            # ЗАГРУЖАЕМ В ПРОГРЕСС (Meowdex/logic/progres.py)
-
-        # elif self.game_res == "loss":
-        #     arcade.draw_texture_rect(self.single_loss_tex,
-        #                              arcade.rect.XYWH(self.width / 2,
-        #                                               self.height / 2,
-        #                                               self.single_win_tex.width * scale,
-        #                                               self.height))
-        #
-        # elif self.game_res == "draw" or "left_win" or "right_win" or "all_loss":
-        #     arcade.draw_texture_rect(self.single_win_tex,
-        #                              arcade.rect.XYWH(self.width / 2,
-        #                                               self.height / 2,
-        #                                               self.single_win_tex.width * scale,
-        #                                               self.height))
-        # -- из progress_screen.py --
-        # повыше по y и побольше в масштабе
-        #
+        # Кнопка Home
         btn_height = self.height / 10
-
         home_height = btn_height * 0.8
         home_width = self.home_btn_tex.width * (home_height / self.home_btn_tex.height)
 
@@ -327,6 +401,7 @@ class ResultScreen(arcade.View):
 
                 self.fade_active = True
                 self.fade_mode = "off"
+
         if self.fade_active:
             if self.fade_mode == "on":
                 self.fade_alpha -= self.fade_speed * delta_time
@@ -343,23 +418,33 @@ class ResultScreen(arcade.View):
 
                     from ui.screens.menu_screen import MenuScreen
                     self.window.show_view(MenuScreen())
-        if self.win_particles_active:
-            for p in self.win_particles:
-                p[0] += p[2] * delta_time  # x
-                p[1] += p[3] * delta_time  # y
 
-            self.win_particles = [
-                p for p in self.win_particles
-                if p[1] > -50
-            ]
+        # Обновление частиц
+        if self.particles_active:
+            if self.game_res in ("win", "draw"):
+                for p in self.win_particles:
+                    p[0] += p[2] * delta_time  # x
+                    p[1] += p[3] * delta_time  # y
+                self.win_particles = [p for p in self.win_particles if p[1] > -50]
 
-        if self.rain_active:
-            for drop in self.rain:
-                drop[1] -= drop[2] * delta_time
+            if self.game_res == "draw":
+                for p in self.draw_particles:
+                    p[0] += p[2] * delta_time
+                    p[1] += p[3] * delta_time
+                self.draw_particles = [p for p in self.draw_particles if p[1] > -50]
 
-                if drop[1] < -drop[3]:
-                    drop[0] = random.uniform(0, self.width)
-                    drop[1] = self.height + random.uniform(0, 200)
+            if self.game_res in ("loss", "all_loss", "left_win", "right_win"):
+                for drop in self.rain:
+                    drop[1] -= drop[2] * delta_time
+                    if drop[1] < -drop[3]:
+                        # Перемещаем каплю в верхнюю часть соответствующей половины экрана
+                        if self.game_res == "left_win":
+                            drop[0] = random.uniform(self.width / 2, self.width)
+                        elif self.game_res == "right_win":
+                            drop[0] = random.uniform(0, self.width / 2)
+                        else:
+                            drop[0] = random.uniform(0, self.width)
+                        drop[1] = self.height + random.uniform(0, 200)
 
     def on_mouse_motion(self, x, y, dx, dy):
         self.home_hover = False
