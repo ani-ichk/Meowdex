@@ -4227,10 +4227,13 @@ imported by:
  &#8226;   <a href="#arcade.version">arcade.version</a>
  &#8226;   <a href="#arcade.window_commands">arcade.window_commands</a>
  &#8226;   <a href="#main.py">main.py</a>
+ &#8226;   <a href="#ui.screens.computer_game_screen">ui.screens.computer_game_screen</a>
+ &#8226;   <a href="#ui.screens.friend_game_screen">ui.screens.friend_game_screen</a>
  &#8226;   <a href="#ui.screens.friend_word_input_screen">ui.screens.friend_word_input_screen</a>
  &#8226;   <a href="#ui.screens.game_screen">ui.screens.game_screen</a>
  &#8226;   <a href="#ui.screens.menu_screen">ui.screens.menu_screen</a>
  &#8226;   <a href="#ui.screens.play_screen">ui.screens.play_screen</a>
+ &#8226;   <a href="#ui.screens.playing_friend_computer">ui.screens.playing_friend_computer</a>
  &#8226;   <a href="#ui.screens.progress_screen">ui.screens.progress_screen</a>
  &#8226;   <a href="#ui.screens.result_screen">ui.screens.result_screen</a>
  &#8226;   <a href="#ui.screens.rules_game_screen">ui.screens.rules_game_screen</a>
@@ -14700,7 +14703,9 @@ imports:
   </div>
   <div class="import">
 imported by:
-    <a href="#ui.screens.play_screen">ui.screens.play_screen</a>
+    <a href="#ui.screens.computer_game_screen">ui.screens.computer_game_screen</a>
+ &#8226;   <a href="#ui.screens.play_screen">ui.screens.play_screen</a>
+ &#8226;   <a href="#ui.screens.playing_friend_computer">ui.screens.playing_friend_computer</a>
 
   </div>
 
@@ -14864,7 +14869,8 @@ imports:
   </div>
   <div class="import">
 imported by:
-    <a href="#ui.screens.game_screen">ui.screens.game_screen</a>
+    <a href="#ui.screens.friend_game_screen">ui.screens.friend_game_screen</a>
+ &#8226;   <a href="#ui.screens.game_screen">ui.screens.game_screen</a>
 
   </div>
 
@@ -25194,13 +25200,56 @@ imports:
   </div>
   <div class="import">
 imported by:
-    <a href="#ui.screens.friend_word_input_screen">ui.screens.friend_word_input_screen</a>
+    <a href="#ui.screens.computer_game_screen">ui.screens.computer_game_screen</a>
+ &#8226;   <a href="#ui.screens.friend_game_screen">ui.screens.friend_game_screen</a>
+ &#8226;   <a href="#ui.screens.friend_word_input_screen">ui.screens.friend_word_input_screen</a>
  &#8226;   <a href="#ui.screens.game_screen">ui.screens.game_screen</a>
  &#8226;   <a href="#ui.screens.menu_screen">ui.screens.menu_screen</a>
  &#8226;   <a href="#ui.screens.play_screen">ui.screens.play_screen</a>
+ &#8226;   <a href="#ui.screens.playing_friend_computer">ui.screens.playing_friend_computer</a>
  &#8226;   <a href="#ui.screens.progress_screen">ui.screens.progress_screen</a>
  &#8226;   <a href="#ui.screens.result_screen">ui.screens.result_screen</a>
  &#8226;   <a href="#ui.screens.rules_game_screen">ui.screens.rules_game_screen</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="ui.screens.computer_game_screen"></a>
+  <a target="code" href="///C:/Users/Panda/PycharmProjects/Meowdex/ui/screens/computer_game_screen.py" type="text/plain"><tt>ui.screens.computer_game_screen</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#arcade">arcade</a>
+ &#8226;   <a href="#logic.word">logic.word</a>
+ &#8226;   <a href="#ui.screens">ui.screens</a>
+ &#8226;   <a href="#ui.screens.menu_screen">ui.screens.menu_screen</a>
+ &#8226;   <a href="#ui.screens.result_screen">ui.screens.result_screen</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#ui.screens.playing_friend_computer">ui.screens.playing_friend_computer</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="ui.screens.friend_game_screen"></a>
+  <a target="code" href="///C:/Users/Panda/PycharmProjects/Meowdex/ui/screens/friend_game_screen.py" type="text/plain"><tt>ui.screens.friend_game_screen</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#arcade">arcade</a>
+ &#8226;   <a href="#models.word">models.word</a>
+ &#8226;   <a href="#ui.screens">ui.screens</a>
+ &#8226;   <a href="#ui.screens.menu_screen">ui.screens.menu_screen</a>
+ &#8226;   <a href="#ui.screens.result_screen">ui.screens.result_screen</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#ui.screens.friend_word_input_screen">ui.screens.friend_word_input_screen</a>
 
   </div>
 
@@ -25213,12 +25262,13 @@ imported by:
 imports:
     <a href="#arcade">arcade</a>
  &#8226;   <a href="#ui.screens">ui.screens</a>
- &#8226;   <a href="#ui.screens.game_screen">ui.screens.game_screen</a>
+ &#8226;   <a href="#ui.screens.friend_game_screen">ui.screens.friend_game_screen</a>
+ &#8226;   <a href="#ui.screens.menu_screen">ui.screens.menu_screen</a>
 
   </div>
   <div class="import">
 imported by:
-    <a href="#ui.screens.play_screen">ui.screens.play_screen</a>
+    <a href="#ui.screens.playing_friend_computer">ui.screens.playing_friend_computer</a>
 
   </div>
 
@@ -25238,8 +25288,7 @@ imports:
   </div>
   <div class="import">
 imported by:
-    <a href="#ui.screens.friend_word_input_screen">ui.screens.friend_word_input_screen</a>
- &#8226;   <a href="#ui.screens.play_screen">ui.screens.play_screen</a>
+    <a href="#ui.screens.play_screen">ui.screens.play_screen</a>
 
   </div>
 
@@ -25260,8 +25309,12 @@ imports:
   <div class="import">
 imported by:
     <a href="#main.py">main.py</a>
+ &#8226;   <a href="#ui.screens.computer_game_screen">ui.screens.computer_game_screen</a>
+ &#8226;   <a href="#ui.screens.friend_game_screen">ui.screens.friend_game_screen</a>
+ &#8226;   <a href="#ui.screens.friend_word_input_screen">ui.screens.friend_word_input_screen</a>
  &#8226;   <a href="#ui.screens.game_screen">ui.screens.game_screen</a>
  &#8226;   <a href="#ui.screens.play_screen">ui.screens.play_screen</a>
+ &#8226;   <a href="#ui.screens.playing_friend_computer">ui.screens.playing_friend_computer</a>
  &#8226;   <a href="#ui.screens.progress_screen">ui.screens.progress_screen</a>
  &#8226;   <a href="#ui.screens.result_screen">ui.screens.result_screen</a>
  &#8226;   <a href="#ui.screens.rules_game_screen">ui.screens.rules_game_screen</a>
@@ -25278,14 +25331,35 @@ imports:
     <a href="#arcade">arcade</a>
  &#8226;   <a href="#logic.word">logic.word</a>
  &#8226;   <a href="#ui.screens">ui.screens</a>
- &#8226;   <a href="#ui.screens.friend_word_input_screen">ui.screens.friend_word_input_screen</a>
  &#8226;   <a href="#ui.screens.game_screen">ui.screens.game_screen</a>
  &#8226;   <a href="#ui.screens.menu_screen">ui.screens.menu_screen</a>
+ &#8226;   <a href="#ui.screens.playing_friend_computer">ui.screens.playing_friend_computer</a>
 
   </div>
   <div class="import">
 imported by:
     <a href="#ui.screens.menu_screen">ui.screens.menu_screen</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="ui.screens.playing_friend_computer"></a>
+  <a target="code" href="///C:/Users/Panda/PycharmProjects/Meowdex/ui/screens/playing_friend_computer.py" type="text/plain"><tt>ui.screens.playing_friend_computer</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#arcade">arcade</a>
+ &#8226;   <a href="#logic.word">logic.word</a>
+ &#8226;   <a href="#ui.screens">ui.screens</a>
+ &#8226;   <a href="#ui.screens.computer_game_screen">ui.screens.computer_game_screen</a>
+ &#8226;   <a href="#ui.screens.friend_word_input_screen">ui.screens.friend_word_input_screen</a>
+ &#8226;   <a href="#ui.screens.menu_screen">ui.screens.menu_screen</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#ui.screens.play_screen">ui.screens.play_screen</a>
 
   </div>
 
@@ -25327,7 +25401,9 @@ imports:
   </div>
   <div class="import">
 imported by:
-    <a href="#ui.screens.game_screen">ui.screens.game_screen</a>
+    <a href="#ui.screens.computer_game_screen">ui.screens.computer_game_screen</a>
+ &#8226;   <a href="#ui.screens.friend_game_screen">ui.screens.friend_game_screen</a>
+ &#8226;   <a href="#ui.screens.game_screen">ui.screens.game_screen</a>
 
   </div>
 
